@@ -3,9 +3,10 @@ plugins {
     id("org.jetbrains.intellij") version "1.15.0"
 }
 
-dependencies {
-    implementation("batik:batik-transcoder:1.6-1")
-}
+//dependencies {
+//    implementation("batik:batik-transcoder:1.6-1")
+//    implementation("javax.xml.parsers:jaxp-api:1.4.5")
+//}
 
 group = "com.merkost.drawablepreview"
 version = "1.1.9"
