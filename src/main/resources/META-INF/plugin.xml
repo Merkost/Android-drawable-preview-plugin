@@ -1,10 +1,12 @@
 <idea-plugin>
-    <id>com.mistamek.drawablepreview.drawable-preview</id>
+    <id>com.merkost.drawablepreview</id>
     <name>Android Drawable Preview</name>
-    <vendor email="grigor1ev.vladimir@yandex.ru">Mista Mek</vendor>
+    <vendor email="merkostdev@gmail.com">Merkost</vendor>
 
     <description><![CDATA[
-    Render drawable instead of default icon. Supports binary and vector images
+    Preview your drawables in resources folder instead of the default icon. Supports binary and vector images
+
+    forked from Mista Mek's drawable preview library
     ]]></description>
 
     <change-notes><![CDATA[
@@ -18,7 +20,7 @@
     1.1.6 Added support for SVG icons<br/>
     1.1.7 Support for Hedgehog<br/>
     1.1.8 Support for Jellyfish (233)<br/>
-
+    1.1.9 Support for Koala (241)<br/>
     ]]>
     </change-notes>
 
@@ -29,12 +31,12 @@
 <!--    <depends>com.intellij.modules.androidstudio</depends>-->
 
     <extensions defaultExtensionNs="com.intellij">
-        <iconProvider implementation="com.mistamek.drawablepreview.DrawablePreviewIconProvider"
-                      id="com.mistamek.drawablepreview.DrawablePreviewIconProvider" order="first"/>
+        <iconProvider implementation="com.merkost.drawablepreview.DrawablePreviewIconProvider"
+                      id="com.merkost.drawablepreview.DrawablePreviewIconProvider" order="first"/>
 
         <applicationConfigurable groupId="appearance" displayName="Android drawable preview"
                                  id="settings.androidDrawablePreview"
-                                 instance="com.mistamek.drawablepreview.settings.SettingsConfigurable"/>
+                                 instance="com.merkost.drawablepreview.settings.SettingsConfigurable"/>
     </extensions>
 
 </idea-plugin>

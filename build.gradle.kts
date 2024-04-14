@@ -3,15 +3,19 @@ plugins {
     id("org.jetbrains.intellij") version "1.15.0"
 }
 
-group = "com.mistamek.drawablepreview"
-version = "1.1.8"
+dependencies {
+    implementation("batik:batik-transcoder:1.6-1")
+}
+
+group = "com.merkost.drawablepreview"
+version = "1.1.9"
 
 // Configure Gradle IntelliJ Plugin
 // Read more: https://plugins.jetbrains.com/docs/intellij/tools-gradle-intellij-plugin.html
 intellij {
     // https://plugins.jetbrains.com/docs/intellij/android-studio-releases-list.html
     // https://plugins.jetbrains.com/docs/intellij/android-studio.html#android-studio-releases-listing
-    version.set("2023.3.1.8")
+    version.set("2024.1.1.1")
     type.set("AI") // Target IDE Platform
 
     /* Plugin Dependencies */
@@ -22,6 +26,7 @@ intellij {
      * values inferred from IDE version.
      */
     updateSinceUntilBuild.set(false)
+
 }
 
 repositories {
@@ -32,19 +37,19 @@ repositories {
 tasks {
     // Set the JVM compatibility versions
     withType<JavaCompile> {
-        sourceCompatibility = "11"
-        targetCompatibility = "11"
+        sourceCompatibility = "17"
+        targetCompatibility = "17"
     }
     withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
-        kotlinOptions.jvmTarget = "11"
+        kotlinOptions.jvmTarget = "17"
     }
 
     patchPluginXml {
         sinceBuild.set("222")
-        untilBuild.set("233.*")
+        untilBuild.set("242.*")
     }
 
     runIde {
-        ideDir.set(file("d:\\develop\\android\\android-studio\\"))
+        ideDir.set(file("/Applications/Android Studio Preview.app/Contents"))
     }
 }
