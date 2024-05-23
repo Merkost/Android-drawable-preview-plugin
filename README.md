@@ -1,4 +1,4 @@
-# Android drawable preview plugin
+# Android Drawable Preview plugin
 
 Android studio and IntelliJ IDEA plugin that replaces default icons with drawables previews inside project view.
 
