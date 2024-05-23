@@ -1,12 +1,11 @@
 <idea-plugin>
     <id>com.merkost.drawablepreview</id>
+
     <name>Android Drawable Preview</name>
     <vendor email="merkostdev@gmail.com">Merkost</vendor>
 
     <description><![CDATA[
-    Preview your drawables in resources folder instead of the default icon. Supports binary and vector images
-
-    Forked from Mista Mek's drawable preview library
+    Preview your drawables in resources folder instead of the default icon. Supports binary and vector images.\nForked from Mista Mek's drawable preview library
     ]]></description>
 
     <change-notes><![CDATA[
@@ -21,22 +20,23 @@
     1.1.7 Support for Hedgehog<br/>
     1.1.8 Support for Jellyfish (233)<br/>
     1.1.9 Support for Koala (241)<br/>
+    1.1.10 Added plugin icon<br/>
     ]]>
     </change-notes>
 
-    <idea-version since-build="222"/>
+    <idea-version since-build="223" />
 
     <depends>org.jetbrains.android</depends>
-    <depends>com.intellij.modules.platform</depends>
-<!--    <depends>com.intellij.modules.androidstudio</depends>-->
+    <depends>com.intellij.modules.androidstudio</depends>
 
     <extensions defaultExtensionNs="com.intellij">
-        <iconProvider implementation="com.merkost.drawablepreview.DrawablePreviewIconProvider"
-                      id="com.merkost.drawablepreview.DrawablePreviewIconProvider" order="first"/>
+        <iconProvider id="com.merkost.drawablepreview.DrawablePreviewIconProvider"
+            implementation="com.merkost.drawablepreview.DrawablePreviewIconProvider"
+            order="first" />
 
-        <applicationConfigurable groupId="appearance" displayName="Android drawable preview"
-                                 id="settings.androidDrawablePreview"
-                                 instance="com.merkost.drawablepreview.settings.SettingsConfigurable"/>
+        <applicationConfigurable displayName="Android Drawable Preview" groupId="appearance"
+            id="settings.androidDrawablePreview"
+            instance="com.merkost.drawablepreview.settings.SettingsConfigurable" />
     </extensions>
 
 </idea-plugin>

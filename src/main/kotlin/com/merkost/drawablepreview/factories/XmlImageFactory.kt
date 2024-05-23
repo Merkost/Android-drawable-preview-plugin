@@ -50,15 +50,24 @@ object XmlImageFactory {
             return null
         }
 
-        val documentBuilderFactory = DocumentBuilderFactory.newInstance()
-        val documentBuilder = documentBuilderFactory.newDocumentBuilder()
-        val document = documentBuilder.parse(File(path)) ?: return null
-        val root = document.documentElement ?: return null
+        val document = parseXmlFile(File(path))
+        val root = document?.documentElement ?: return null
         val resolver = getResourceResolver(Utils.getPsiFileFromPath(path))
         if (resolver != null) {
             replaceResourceReferences(root, resolver)
         }
         return document
+    }
+
+    fun parseXmlFile(file: File): Document? {
+        try {
+            val dbFactory = DocumentBuilderFactory.newInstance()
+            val dBuilder = dbFactory.newDocumentBuilder()
+            return dBuilder.parse(file)
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+        return null
     }
 
     private fun getDrawableImage(rootElement: Element): BufferedImage? {
@@ -108,10 +117,14 @@ object XmlImageFactory {
     private fun isReference(attributeValue: String) = ResourceUrl.parse(attributeValue) != null
 
     private fun getResourceResolver(element: PsiFile?): ResourceResolver? {
-        return element?.let {
-            ProjectRootManager.getInstance(element.project).fileIndex.getModuleForFile(element.virtualFile)?.let {
-                ConfigurationManager.getOrCreateInstance(it).getConfiguration(element.virtualFile).resourceResolver
-            }
-        }
+        if (element == null) return null
+
+        val module = ProjectRootManager.getInstance(element.project)
+            .fileIndex.getModuleForFile(element.virtualFile)
+            ?: return null
+
+        return ConfigurationManager.getOrCreateInstance(module)
+            .getConfiguration(element.virtualFile)
+            .resourceResolver
     }
 }

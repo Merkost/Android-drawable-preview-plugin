@@ -1,15 +1,19 @@
 plugins {
     kotlin("jvm") version "1.8.22"
-    id("org.jetbrains.intellij") version "1.15.0"
+//    id("java")
+    id("org.jetbrains.intellij") version "1.17.3"
 }
 
-//dependencies {
-//    implementation("batik:batik-transcoder:1.6-1")
-//    implementation("javax.xml.parsers:jaxp-api:1.4.5")
-//}
+dependencies {
+    implementation("org.apache.xmlgraphics:batik-transcoder:1.7")
+}
 
 group = "com.merkost.drawablepreview"
-version = "1.1.9"
+version = "1.1.10"
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+}
 
 // Configure Gradle IntelliJ Plugin
 // Read more: https://plugins.jetbrains.com/docs/intellij/tools-gradle-intellij-plugin.html
@@ -19,8 +23,17 @@ intellij {
     version.set("2024.1.1.1")
     type.set("AI") // Target IDE Platform
 
+//    version.set("2024.1")
+//    type.set("IC") // Target IDE Platform
+
     /* Plugin Dependencies */
-    plugins.set(listOf("android"))
+//    https://plugins.jetbrains.com/docs/intellij/plugin-dependencies.html
+    plugins.set(
+        listOf(
+            "android",
+            "org.jetbrains.kotlin",
+        )
+    )
 
     /**
      * Patch plugin.xml with since and until build
@@ -36,18 +49,17 @@ repositories {
 }
 
 tasks {
-    // Set the JVM compatibility versions
-    withType<JavaCompile> {
-        sourceCompatibility = "17"
-        targetCompatibility = "17"
+    compileKotlin {
+        kotlinOptions.jvmTarget = "17"
     }
-    withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile> {
+
+    compileTestKotlin {
         kotlinOptions.jvmTarget = "17"
     }
 
     patchPluginXml {
-        sinceBuild.set("222")
-        untilBuild.set("242.*")
+        sinceBuild.set("233")
+        untilBuild.set("")
     }
 
     runIde {
