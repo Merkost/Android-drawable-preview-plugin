@@ -1,6 +1,4 @@
-# Android drawable preview plugin
-
-[![Android Arsenal]( https://img.shields.io/badge/Android%20Arsenal-Android%20drawable%20preview%20plugin-green.svg?style=flat )]( https://android-arsenal.com/details/1/7000 )
+# Android Drawable Preview plugin
 
 Android studio and IntelliJ IDEA plugin that replaces default icons with drawables previews inside project view.
 
@@ -8,7 +6,7 @@ Android studio and IntelliJ IDEA plugin that replaces default icons with drawabl
 
 # Installation
 
-1. Download [plugin zip archive](./release/drawable_preview-1.1.6.zip)
+1. Download [plugin zip archive](https://github.com/Merkost/Android-drawable-preview-plugin/releases/download/Stable/drawable-preview-1.1.10.zip)
 2. Inside Android Studio go to File -> Settings -> Plugins -> Install plugin from disk
 3. Select zip archive
 
