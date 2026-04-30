@@ -103,6 +103,61 @@ intellijPlatform {
             recommended()
         }
     }
+
+    // JetBrains Marketplace publishing.
+    //
+    // Token: obtained from https://plugins.jetbrains.com/author/me/tokens
+    // and supplied via either:
+    //   - the JETBRAINS_MARKETPLACE_TOKEN environment variable, or
+    //   - a `jetbrains.marketplace.token=...` line in ~/.gradle/gradle.properties
+    //     (NEVER in the repo's gradle.properties — that file is committed).
+    //
+    // Channel: "default" (stable) by default. Switch to "eap" / "beta" via
+    // JETBRAINS_MARKETPLACE_CHANNEL when shipping previews.
+    //
+    // Usage:
+    //   ./gradlew publishPlugin
+    publishing {
+        token = providers.environmentVariable("JETBRAINS_MARKETPLACE_TOKEN")
+            .orElse(providers.gradleProperty("jetbrains.marketplace.token"))
+        channels = providers.environmentVariable("JETBRAINS_MARKETPLACE_CHANNEL")
+            .orElse(providers.gradleProperty("jetbrains.marketplace.channel"))
+            .orElse("default")
+            .map { listOf(it) }
+        // Block release if plugin verifier fails on any recommended IDE.
+        // Comment out if you want to publish anyway (e.g. EAP-only fixes).
+        ideServices = false
+        hidden = false
+    }
+
+    // Optional: sign the plugin so the Marketplace shows the signed-by name
+    // and so the IDE doesn't warn end-users on install.
+    //
+    // Generate a key with:
+    //   openssl genrsa -aes256 -out private.pem 4096
+    //   openssl req -new -x509 -key private.pem -days 365 -out chain.crt
+    //
+    // Then supply the paths + password via env or ~/.gradle/gradle.properties:
+    //   JETBRAINS_PLUGIN_CERT_CHAIN_FILE / jetbrains.plugin.cert.chain.file
+    //   JETBRAINS_PLUGIN_PRIVATE_KEY_FILE / jetbrains.plugin.private.key.file
+    //   JETBRAINS_PLUGIN_PRIVATE_KEY_PASSWORD / jetbrains.plugin.private.key.password
+    //
+    // Signing is silently skipped when those properties aren't set, so the
+    // build still works for contributors without keys.
+    signing {
+        certificateChainFile = layout.file(
+            providers.environmentVariable("JETBRAINS_PLUGIN_CERT_CHAIN_FILE")
+                .orElse(providers.gradleProperty("jetbrains.plugin.cert.chain.file"))
+                .map { File(it) },
+        )
+        privateKeyFile = layout.file(
+            providers.environmentVariable("JETBRAINS_PLUGIN_PRIVATE_KEY_FILE")
+                .orElse(providers.gradleProperty("jetbrains.plugin.private.key.file"))
+                .map { File(it) },
+        )
+        password = providers.environmentVariable("JETBRAINS_PLUGIN_PRIVATE_KEY_PASSWORD")
+            .orElse(providers.gradleProperty("jetbrains.plugin.private.key.password"))
+    }
 }
 
 tasks {
