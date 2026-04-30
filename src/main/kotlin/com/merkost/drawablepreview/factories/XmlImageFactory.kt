@@ -30,19 +30,13 @@ object XmlImageFactory {
     fun createXmlImage(path: String): BufferedImage? {
         val document = parseDocument(path) ?: return null
 
-        return getDrawableImage(document.documentElement)
-                ?: StringBuilder(100).let { builder ->
-                    val imageTargetSize: VdPreview.TargetSize? = VdPreview.TargetSize::class.java.let { clazz ->
-                        clazz.methods.forEach { method ->
-                            when (method.name) {
-                                "createSizeFromWidth", "createFromMaxDimension" ->
-                                    return@let method.invoke(null, SettingsUtils.getPreviewSize()) as? VdPreview.TargetSize
-                            }
-                        }
-                        null
-                    }
-                    imageTargetSize?.let { VdPreview.getPreviewFromVectorDocument(imageTargetSize, document, builder) }
-                }
+        getDrawableImage(document.documentElement)?.let { return it }
+
+        // Vector drawables we don't model in our DOM (e.g. plain <vector>) fall
+        // through to Android's reference renderer.
+        val targetSize = VdPreview.TargetSize.createFromMaxDimension(SettingsUtils.getPreviewSize())
+        val errors = StringBuilder()
+        return VdPreview.getPreviewFromVectorDocument(targetSize, document, errors)
     }
 
     fun getDrawable(path: String): Drawable? = parseDocument(path)?.let { DrawableInflater.getDrawable(it.documentElement) }
