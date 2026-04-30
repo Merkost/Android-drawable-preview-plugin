@@ -37,6 +37,8 @@
         <applicationConfigurable displayName="Android Drawable Preview" groupId="appearance"
             id="settings.androidDrawablePreview"
             instance="com.merkost.drawablepreview.settings.SettingsConfigurable" />
+
+        <projectViewNodeDecorator implementation="com.merkost.drawablepreview.DrawableNodeDecorator" />
     </extensions>
 
     <actions>
