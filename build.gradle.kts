@@ -6,6 +6,11 @@ import java.util.Properties
 
 plugins {
     alias(libs.plugins.kotlin.jvm)
+    // Compose compiler plugin — processes @Composable functions during kotlinc.
+    // Compose runtime + Jewel come from the IDE's bundled modules (declared
+    // below), so this plugin only adds the kotlinc compose-compiler-plugin,
+    // not any shipped runtime weight.
+    alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.intellij.platform)
 }
 
@@ -80,6 +85,18 @@ dependencies {
         // call any kotlin-plugin APIs from our code so the version drift is
         // safe to ignore.
         bundledPlugin("org.jetbrains.kotlin")
+
+        // Use the IDE's bundled Compose runtime + Jewel UI library so we
+        // don't ship a duplicate ~12 MB of Skia + Compose binaries. AS
+        // Narwhal (253) ships these as platform modules; if we ever target
+        // an older IDE that doesn't bundle them, we'd need to add the
+        // standalone artifacts as fallback.
+        bundledModule("intellij.platform.compose")
+        bundledModule("intellij.libraries.compose.runtime.desktop")
+        bundledModule("intellij.libraries.compose.foundation.desktop")
+        bundledModule("intellij.platform.jewel.foundation")
+        bundledModule("intellij.platform.jewel.ui")
+        bundledModule("intellij.platform.jewel.ideLafBridge")
 
         localPlugin(androidPluginPath)
 

@@ -23,4 +23,9 @@ junit = { module = "junit:junit", version.ref = "junit" }
 
 [plugins]
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+# Compose compiler plugin — only needed for the Resource Manager tool window
+# in 1.3.0. Compose runtime + Jewel come from the IDE's bundled modules
+# (declared via `bundledModule(...)` in build.gradle.kts) so this plugin
+# only adds the kotlinc compose-compiler-plugin, not any runtime weight.
+kotlin-compose = { id = "org.jetbrains.kotlin.plugin.compose", version.ref = "kotlin" }
 intellij-platform = { id = "org.jetbrains.intellij.platform", version.ref = "intellijPlatform" }
