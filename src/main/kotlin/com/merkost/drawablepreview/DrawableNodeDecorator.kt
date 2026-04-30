@@ -11,10 +11,10 @@ import java.io.IOException
 import javax.imageio.ImageIO
 
 /**
- * Adds a richer tooltip on Project View nodes for previewable drawables:
- * dimensions, density bucket, file size. The visual preview itself is the
- * (small) icon already provided by [DrawablePreviewIconProvider]; for a
- * larger preview the user can right-click → Show Drawable Preview.
+ * Adds a richer tooltip on Project View nodes for previewable drawables: an
+ * inline 96px thumbnail, dimensions, density bucket, and file size. The
+ * thumbnail is base64-embedded so the tooltip's HTML renderer doesn't need
+ * file access at hover time.
  */
 class DrawableNodeDecorator : ProjectViewNodeDecorator {
 
@@ -32,7 +32,19 @@ class DrawableNodeDecorator : ProjectViewNodeDecorator {
         dimensionsOf(file)?.let(parts::add)
         densityBucketOf(file)?.let(parts::add)
         parts += humanSize(file.length)
-        if (parts.isEmpty()) null else parts.joinToString("  •  ")
+
+        val name = htmlEscape(file.name)
+        val meta = parts.joinToString("&nbsp;&nbsp;•&nbsp;&nbsp;")
+        val thumb = TooltipThumbnail.dataUriFor(file)?.let {
+            "<img src='$it' width='96' height='96'/><br/>"
+        } ?: ""
+
+        """
+        <html><body style='margin:6px'>
+        $thumb<b>$name</b><br/>
+        <span style='color:#888'>$meta</span>
+        </body></html>
+        """.trimIndent()
     } catch (e: Exception) {
         LOG.debug("Tooltip metadata failed for ${file.path}", e)
         null
@@ -83,6 +95,9 @@ class DrawableNodeDecorator : ProjectViewNodeDecorator {
         if (kb < 1024) return "%.1f KB".format(kb)
         return "%.1f MB".format(kb / 1024.0)
     }
+
+    private fun htmlEscape(s: String): String =
+        s.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
 
     private fun VirtualFile.isPreviewable(): Boolean {
         val n = name
