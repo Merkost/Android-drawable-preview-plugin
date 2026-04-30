@@ -46,6 +46,15 @@
         <statusBarWidgetFactory id="com.merkost.drawablepreview.StatusBarWidget"
             implementation="com.merkost.drawablepreview.statusbar.DrawablePreviewStatusBarWidgetFactory"
             order="last" />
+
+        <localInspection
+            language=""
+            shortName="DrawablePreviewUnusedDrawable"
+            displayName="Unused drawable resource"
+            groupName="Android"
+            enabledByDefault="true"
+            level="WARNING"
+            implementationClass="com.merkost.drawablepreview.inspections.UnusedDrawableInspection" />
     </extensions>
 
     <actions>
