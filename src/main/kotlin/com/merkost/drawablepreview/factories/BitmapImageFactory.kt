@@ -33,7 +33,7 @@ object BitmapImageFactory {
      *
      * Returns null when the image is too small to be a valid 9-patch.
      */
-    private fun stripNinePatchBorders(image: BufferedImage): BufferedImage? {
+    internal fun stripNinePatchBorders(image: BufferedImage): BufferedImage? {
         if (image.width <= 2 || image.height <= 2) return null
         return image.getSubimage(1, 1, image.width - 2, image.height - 2)
     }
