@@ -34,13 +34,21 @@ class DrawablePreviewPanel(
     private val isAdaptiveIcon: Boolean = isAdaptiveIcon(psiFile)
     private var maskShape: MaskShape = MaskShape.DEFAULT
 
-    private val canvas = PreviewCanvas(renderImage(), renderSize)
+    // Lazily-evaluated selector states; null if the file isn't a selector.
+    private val selectorStates: List<SelectorState>? = psiFile.virtualFile?.path?.let {
+        SelectorStates.extract(it, renderSize)
+    }
+
+    private val canvas = PreviewCanvas(initialImage(), renderSize)
 
     init {
         border = JBUI.Borders.empty(8)
         add(canvas, BorderLayout.CENTER)
         add(buildControls(), BorderLayout.SOUTH)
     }
+
+    private fun initialImage(): BufferedImage? = selectorStates?.firstOrNull()?.image
+        ?: renderImage()
 
     private fun renderImage(): BufferedImage? = SettingsUtils.withRenderSize(renderSize) {
         SettingsUtils.withMaskShape(maskShape) {
@@ -51,6 +59,10 @@ class DrawablePreviewPanel(
     private fun buildControls(): JPanel {
         val column = JPanel()
         column.layout = javax.swing.BoxLayout(column, javax.swing.BoxLayout.Y_AXIS)
+        if (selectorStates != null && selectorStates.size > 1) {
+            column.add(buildSelectorStateChooser(selectorStates))
+            column.add(Box.createVerticalStrut(4))
+        }
         column.add(buildBackgroundChooser())
         if (isAdaptiveIcon) {
             column.add(Box.createVerticalStrut(4))
@@ -58,6 +70,13 @@ class DrawablePreviewPanel(
         }
         return column
     }
+
+    private fun buildSelectorStateChooser(states: List<SelectorState>): JPanel = chooserRow(
+        label = "State",
+        items = states,
+        default = states.first(),
+        labelOf = { it.label },
+    ) { canvas.setImage(it.image) }
 
     private fun buildBackgroundChooser(): JPanel = chooserRow(
         label = "Background",
