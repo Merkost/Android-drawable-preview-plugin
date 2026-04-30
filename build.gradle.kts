@@ -1,19 +1,20 @@
 import org.jetbrains.intellij.platform.gradle.TestFrameworkType
 import org.jetbrains.intellij.platform.gradle.extensions.IntelliJPlatformExtension
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import java.io.File
 import java.util.Properties
 
 plugins {
-    kotlin("jvm") version "2.1.21"
-    id("org.jetbrains.intellij.platform") version "2.15.0"
+    alias(libs.plugins.kotlin.jvm)
+    alias(libs.plugins.intellij.platform)
 }
 
 group = "com.merkost.drawablepreview"
 version = "1.2.0"
 
-// AS 2024.3 (243+) requires Java 21 source/target compatibility.
+// AS 243+ ships on JBR 21 and requires Java 21 bytecode.
 java {
-    sourceCompatibility = JavaVersion.VERSION_21
+    sourceCompatibility = JavaVersion.toVersion(libs.versions.jvm.get())
 }
 
 repositories {
@@ -27,7 +28,8 @@ repositories {
 // Optional per-developer override: point the build at a locally-installed
 // Android Studio (faster iteration, no ~1GB download). Add to local.properties:
 //   studio.dir=/Applications/Android Studio.app/Contents
-// Falls back to the pinned downloadable version below for fresh checkouts / CI.
+// Falls back to the pinned downloadable version from the version catalog
+// for fresh checkouts / CI.
 val localStudioDir: File? = run {
     val props = Properties()
     val file = rootProject.file("local.properties")
@@ -56,11 +58,11 @@ dependencies {
     // class) which then fails to cast back to our plugin classloader's
     // copy with ClassCastException. The JDK has had javax.xml.parsers
     // built-in since Java 5, so we never need xml-apis.
-    implementation("org.apache.xmlgraphics:batik-transcoder:1.18") {
+    implementation(libs.batik.transcoder) {
         exclude(group = "xml-apis", module = "xml-apis")
         exclude(group = "xml-apis", module = "xml-apis-ext")
     }
-    testImplementation("junit:junit:4.13.2")
+    testImplementation(libs.junit)
 
     intellijPlatform {
         if (localStudioDir != null) {
@@ -68,7 +70,7 @@ dependencies {
             local(localStudioDir)
         } else {
             // https://plugins.jetbrains.com/docs/intellij/android-studio-releases-list.html
-            androidStudio("2024.3.2.2")
+            androidStudio(libs.versions.androidStudio.get())
         }
 
         // Required at runtime — without it the sandbox IDE crashes during
@@ -90,7 +92,7 @@ dependencies {
 intellijPlatform {
     pluginConfiguration {
         ideaVersion {
-            sinceBuild = "243"
+            sinceBuild = libs.versions.sinceBuild.get()
             // Open-ended; bump per release once we verify against the next IDE.
             untilBuild = provider { null }
         }
@@ -104,9 +106,11 @@ intellijPlatform {
 }
 
 tasks {
+    val jvmTarget = JvmTarget.fromTarget(libs.versions.jvm.get())
+
     compileKotlin {
         compilerOptions {
-            jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21)
+            this.jvmTarget.set(jvmTarget)
             // The bundled Kotlin plugin in newer Android Studio releases is
             // built against a newer Kotlin metadata version than our compiler.
             // Safe to ignore because we don't call any kotlin-plugin APIs.
@@ -115,7 +119,7 @@ tasks {
     }
     compileTestKotlin {
         compilerOptions {
-            jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21)
+            this.jvmTarget.set(jvmTarget)
             freeCompilerArgs.add("-Xskip-metadata-version-check")
         }
     }

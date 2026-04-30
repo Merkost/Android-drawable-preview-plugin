@@ -1,0 +1,26 @@
+# Gradle version catalog — single source of truth for plugin/library versions.
+# Referenced from build.gradle.kts as `libs.<alias>` / `libs.plugins.<alias>`.
+
+[versions]
+kotlin = "2.1.21"
+intellijPlatform = "2.15.0"
+
+# Build-time targets
+jvm = "21"
+
+# IDE we compile and test against by default. Override per-developer with
+# `studio.dir=...` in local.properties.
+androidStudio = "2024.3.2.2"
+sinceBuild = "243"
+
+# Library versions
+batik = "1.18"
+junit = "4.13.2"
+
+[libraries]
+batik-transcoder = { module = "org.apache.xmlgraphics:batik-transcoder", version.ref = "batik" }
+junit = { module = "junit:junit", version.ref = "junit" }
+
+[plugins]
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
+intellij-platform = { id = "org.jetbrains.intellij.platform", version.ref = "intellijPlatform" }
