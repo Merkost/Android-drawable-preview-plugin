@@ -51,6 +51,9 @@ class DrawablePreviewPanel(
 
     private val canvas = PreviewCanvas(initialImage(), renderSize)
     private val palette = PaletteStrip(initialImage())
+    private val densityVariants: List<DensityVariant>? = psiFile.virtualFile?.path?.let {
+        DensityVariants.extract(it, renderSize = 64)
+    }
 
     init {
         border = JBUI.Borders.empty(8)
@@ -83,9 +86,65 @@ class DrawablePreviewPanel(
             column.add(Box.createVerticalStrut(4))
             column.add(palette)
         }
+        if (densityVariants != null) {
+            column.add(Box.createVerticalStrut(4))
+            column.add(buildDensityRow(densityVariants))
+        }
         column.add(Box.createVerticalStrut(4))
         column.add(buildActionsRow())
         return column
+    }
+
+    private fun buildDensityRow(variants: List<DensityVariant>): JPanel {
+        val row = JPanel(FlowLayout(FlowLayout.CENTER, 6, 4))
+        row.add(JLabel("Densities:"))
+        variants.forEach { variant ->
+            val cell = JPanel().apply {
+                layout = javax.swing.BoxLayout(this, javax.swing.BoxLayout.Y_AXIS)
+                alignmentY = TOP_ALIGNMENT
+            }
+            cell.add(VariantThumbnail(variant.image))
+            cell.add(JLabel(variant.bucket).apply {
+                horizontalAlignment = JLabel.CENTER
+                alignmentX = CENTER_ALIGNMENT
+            })
+            val dims = if (variant.intrinsicWidth != null && variant.intrinsicHeight != null) {
+                "${variant.intrinsicWidth}×${variant.intrinsicHeight}"
+            } else "—"
+            cell.add(JLabel(dims).apply {
+                horizontalAlignment = JLabel.CENTER
+                alignmentX = CENTER_ALIGNMENT
+                font = font.deriveFont(font.size - 2f)
+                foreground = JBUI.CurrentTheme.Label.disabledForeground()
+            })
+            row.add(cell)
+        }
+        return row
+    }
+
+    private class VariantThumbnail(private val image: BufferedImage?) : JPanel() {
+        init {
+            preferredSize = Dimension(64, 64)
+            border = BorderFactory.createLineBorder(JBUI.CurrentTheme.Label.disabledForeground(), 1)
+            isOpaque = false
+        }
+
+        override fun paintComponent(g: Graphics) {
+            super.paintComponent(g)
+            val current = image ?: return
+            val g2 = g.create() as Graphics2D
+            try {
+                g2.setRenderingHint(
+                    RenderingHints.KEY_INTERPOLATION,
+                    RenderingHints.VALUE_INTERPOLATION_BILINEAR,
+                )
+                val x = (width - current.width) / 2
+                val y = (height - current.height) / 2
+                g2.drawImage(current, x, y, null)
+            } finally {
+                g2.dispose()
+            }
+        }
     }
 
     private fun buildActionsRow(): JPanel {
