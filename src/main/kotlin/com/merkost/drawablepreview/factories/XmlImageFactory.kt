@@ -55,20 +55,42 @@ object XmlImageFactory {
         return document
     }
 
-    fun parseXmlFile(file: File): Document? {
-        return try {
-            val dbFactory = DocumentBuilderFactory.newInstance().apply {
+    fun parseXmlFile(file: File): Document? = try {
+        withJaxpClassLoader {
+            DocumentBuilderFactory.newInstance().apply {
                 // Harden against XXE attacks.
                 setFeature("http://apache.org/xml/features/disallow-doctype-decl", true)
                 setFeature("http://xml.org/sax/features/external-general-entities", false)
                 setFeature("http://xml.org/sax/features/external-parameter-entities", false)
                 isXIncludeAware = false
                 isExpandEntityReferences = false
-            }
-            dbFactory.newDocumentBuilder().parse(file)
-        } catch (e: Exception) {
-            LOG.warn("Failed to parse XML drawable: ${file.path}", e)
-            null
+            }.newDocumentBuilder().parse(file)
+        }
+    } catch (e: Exception) {
+        LOG.warn("Failed to parse XML drawable: ${file.path}", e)
+        null
+    }
+
+    /**
+     * Run [block] with the thread context classloader pinned to JAXP's defining
+     * classloader. Without this, DocumentBuilderFactory.newInstance() finds
+     * the IntelliJ-bundled Xerces and fails the subsequent cast with:
+     *
+     *     ClassCastException: DocumentBuilderFactoryImpl is in unnamed module
+     *     of loader PathClassLoader; ... is in unnamed module of loader
+     *     PluginClassLoader
+     *
+     * because the platform and plugin classloaders see different
+     * DocumentBuilderFactory classes.
+     */
+    private inline fun <T> withJaxpClassLoader(block: () -> T): T {
+        val thread = Thread.currentThread()
+        val previous = thread.contextClassLoader
+        thread.contextClassLoader = DocumentBuilderFactory::class.java.classLoader
+        return try {
+            block()
+        } finally {
+            thread.contextClassLoader = previous
         }
     }
 

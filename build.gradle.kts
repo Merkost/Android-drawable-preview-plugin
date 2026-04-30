@@ -60,9 +60,13 @@ dependencies {
             androidStudio("2024.3.2.2")
         }
 
-        // Note: we don't depend on the Kotlin plugin — our code doesn't use
-        // any of its APIs. Pulling it in only created Kotlin metadata version
-        // conflicts when running against a newer local AS than the pinned one.
+        // Required at runtime — without it the sandbox IDE crashes during
+        // Kotlin file indexing ("No ID found for serializer kotlin.FILE").
+        // We compile cleanly against newer Kotlin metadata via the
+        // -Xskip-metadata-version-check kotlinc flag below; we don't actually
+        // call any kotlin-plugin APIs from our code so the version drift is
+        // safe to ignore.
+        bundledPlugin("org.jetbrains.kotlin")
 
         localPlugin(androidPluginPath)
 
@@ -90,9 +94,18 @@ intellijPlatform {
 
 tasks {
     compileKotlin {
-        compilerOptions.jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21)
+        compilerOptions {
+            jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21)
+            // The bundled Kotlin plugin in newer Android Studio releases is
+            // built against a newer Kotlin metadata version than our compiler.
+            // Safe to ignore because we don't call any kotlin-plugin APIs.
+            freeCompilerArgs.add("-Xskip-metadata-version-check")
+        }
     }
     compileTestKotlin {
-        compilerOptions.jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21)
+        compilerOptions {
+            jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21)
+            freeCompilerArgs.add("-Xskip-metadata-version-check")
+        }
     }
 }
