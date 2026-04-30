@@ -1,7 +1,7 @@
 package com.merkost.drawablepreview
 
 fun String.getDigits() = try {
-    this.replace("\\D+", "").toInt()
+    this.replace(Regex("\\D+"), "").toInt()
 } catch (exception: Exception) {
     null
 }

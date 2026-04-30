@@ -24,7 +24,7 @@
     ]]>
     </change-notes>
 
-    <idea-version since-build="223" />
+    <idea-version since-build="243" />
 
     <depends>org.jetbrains.android</depends>
     <depends>com.intellij.modules.androidstudio</depends>

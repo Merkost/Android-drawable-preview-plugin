@@ -1,10 +1,10 @@
 plugins {
-    kotlin("jvm") version "1.8.22"
-    id("org.jetbrains.intellij") version "1.17.3"
+    kotlin("jvm") version "2.1.21"
+    id("org.jetbrains.intellij") version "1.17.4"
 }
 
 dependencies {
-    implementation("org.apache.xmlgraphics:batik-transcoder:1.7")
+    implementation("org.apache.xmlgraphics:batik-transcoder:1.18")
 }
 
 group = "com.merkost.drawablepreview"
@@ -19,7 +19,7 @@ java {
 intellij {
     // https://plugins.jetbrains.com/docs/intellij/android-studio-releases-list.html
     // https://plugins.jetbrains.com/docs/intellij/android-studio.html#android-studio-releases-listing
-    version.set("2024.1.1.1")
+    version.set("2024.3.2.2")
     type.set("AI") // Target IDE Platform
 
 //    version.set("2024.1")
@@ -57,7 +57,7 @@ tasks {
     }
 
     patchPluginXml {
-        sinceBuild.set("233")
+        sinceBuild.set("243")
         untilBuild.set("")
     }
 
