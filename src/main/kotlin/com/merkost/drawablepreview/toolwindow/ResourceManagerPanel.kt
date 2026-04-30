@@ -19,11 +19,13 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -38,10 +40,16 @@ import androidx.compose.ui.unit.dp
 import com.intellij.openapi.application.ApplicationManager
 import com.intellij.openapi.fileEditor.OpenFileDescriptor
 import com.intellij.openapi.project.Project
+import com.intellij.openapi.vfs.VirtualFileManager
+import com.intellij.openapi.vfs.newvfs.BulkFileListener
+import com.intellij.openapi.vfs.newvfs.events.VFileEvent
 import com.intellij.psi.PsiManager
 import com.merkost.drawablepreview.factories.IconPreviewFactory
 import com.merkost.drawablepreview.settings.SettingsUtils
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import org.jetbrains.jewel.foundation.theme.JewelTheme
 import org.jetbrains.jewel.ui.component.CheckboxRow
@@ -57,13 +65,34 @@ fun ResourceManagerPanel(project: Project) {
     var entries by remember { mutableStateOf<List<DrawableEntry>>(emptyList()) }
     var query by remember { mutableStateOf(TextFieldValue("")) }
     var enabledKinds by remember { mutableStateOf(DrawableEntry.Kind.values().toSet()) }
+    val scope = rememberCoroutineScope()
 
-    LaunchedEffect(project) {
+    suspend fun rescan() {
         entries = withContext(Dispatchers.Default) {
             ApplicationManager.getApplication().runReadAction<List<DrawableEntry>> {
                 DrawableScanner.scan(project)
             }
         }
+    }
+
+    LaunchedEffect(project) { rescan() }
+
+    // Subscribe to VFS bulk events; debounce a re-scan so a multi-file
+    // operation (e.g. Move Resource) doesn't fire dozens of scans in a row.
+    DisposableEffect(project) {
+        var pending: Job? = null
+        val connection = project.messageBus.connect()
+        connection.subscribe(VirtualFileManager.VFS_CHANGES, object : BulkFileListener {
+            override fun after(events: List<VFileEvent>) {
+                if (!events.any { it.isInDrawableFolder() }) return
+                pending?.cancel()
+                pending = scope.launch {
+                    delay(250)  // debounce
+                    rescan()
+                }
+            }
+        })
+        onDispose { connection.disconnect() }
     }
 
     val filtered by remember {
@@ -197,4 +226,15 @@ private fun loadThumbnail(project: Project, entry: DrawableEntry): ImageBitmap? 
 
 private fun openFile(project: Project, entry: DrawableEntry) {
     OpenFileDescriptor(project, entry.file).navigate(true)
+}
+
+/**
+ * Cheap path check — matches segments named drawable* / mipmap*. We accept
+ * false positives here (e.g. a file in /drawable_helpers/ would re-trigger
+ * a scan); the rescan itself filters properly via DrawableScanner so the
+ * worst case is one wasted re-walk.
+ */
+private fun VFileEvent.isInDrawableFolder(): Boolean {
+    val p = path
+    return p.contains("/drawable", ignoreCase = false) || p.contains("/mipmap", ignoreCase = false)
 }
