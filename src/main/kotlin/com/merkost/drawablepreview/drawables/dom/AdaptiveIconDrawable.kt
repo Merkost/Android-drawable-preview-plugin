@@ -2,10 +2,10 @@ package com.merkost.drawablepreview.drawables.dom
 
 import com.merkost.drawablepreview.drawables.ItemDrawableInflater
 import com.merkost.drawablepreview.drawables.forEachAsElement
+import com.merkost.drawablepreview.settings.SettingsUtils
 import org.w3c.dom.Element
 import java.awt.AlphaComposite
 import java.awt.RenderingHints
-import java.awt.geom.Ellipse2D
 import java.awt.image.BufferedImage
 
 class AdaptiveIconDrawable : Drawable() {
@@ -47,13 +47,14 @@ class AdaptiveIconDrawable : Drawable() {
         background?.draw(composed)
         foreground?.draw(composed)
 
-        // Clip to a circular mask — the most common launcher shape, and a
-        // closer visual to what users see at runtime than a raw square.
+        // Mask shape is a thread-local override (default: circle). The popup
+        // sets a different shape via SettingsUtils.withMaskShape so the user
+        // can compare how the icon renders under each launcher style.
         val masked = BufferedImage(outputSize, outputSize, BufferedImage.TYPE_INT_ARGB)
         masked.createGraphics().apply {
             setRenderingHint(RenderingHints.KEY_ANTIALIASING, RenderingHints.VALUE_ANTIALIAS_ON)
             setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_BILINEAR)
-            clip = Ellipse2D.Float(0f, 0f, outputSize.toFloat(), outputSize.toFloat())
+            clip = SettingsUtils.getAdaptiveIconMask().shapeFor(outputSize)
 
             // Center-crop the safe zone of `composed` into the masked output.
             val offset = (workingSize - outputSize) / 2

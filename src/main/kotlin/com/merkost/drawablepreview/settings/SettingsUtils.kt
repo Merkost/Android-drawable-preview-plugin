@@ -3,6 +3,7 @@ package com.merkost.drawablepreview.settings
 import com.intellij.ide.projectView.ProjectView
 import com.intellij.ide.util.PropertiesComponent
 import com.intellij.openapi.project.ProjectManager
+import com.merkost.drawablepreview.drawables.MaskShape
 import com.merkost.drawablepreview.factories.Constants
 import com.merkost.drawablepreview.factories.IconPreviewFactory
 
@@ -17,23 +18,32 @@ object SettingsUtils {
     private const val PROPERTIES_SIZE = "com.mistamek.drawablepreview.settings.PropertiesSize"
     private const val PROPERTIES_ENABLED = "com.merkost.drawablepreview.settings.Enabled"
 
-    // Per-thread render size override. Lets one-off renders (the right-click
-    // preview popup, the hover tooltip) request a different size than the
-    // project-view default without wiring a parameter through every drawable.
+    // Per-thread render size + adaptive-icon mask overrides. Lets one-off
+    // renders (the right-click preview popup, the hover tooltip) request
+    // different settings than the project-view default without wiring a
+    // parameter through every drawable.
     private val sizeOverride = ThreadLocal<Int?>()
+    private val maskOverride = ThreadLocal<MaskShape?>()
+
+    fun getAdaptiveIconMask(): MaskShape = maskOverride.get() ?: MaskShape.DEFAULT
 
     fun getPreviewSize(): Int =
         sizeOverride.get()
             ?: PropertiesComponent.getInstance().getInt(PROPERTIES_SIZE, Constants.ICON_SIZE)
 
     /** Render `block` with [size] in place of the configured preview size. */
-    fun <T> withRenderSize(size: Int, block: () -> T): T {
-        val previous = sizeOverride.get()
-        sizeOverride.set(size)
+    fun <T> withRenderSize(size: Int, block: () -> T): T = withOverride(sizeOverride, size, block)
+
+    /** Render `block` with [shape] forcing the adaptive-icon mask. */
+    fun <T> withMaskShape(shape: MaskShape, block: () -> T): T = withOverride(maskOverride, shape, block)
+
+    private fun <V, T> withOverride(holder: ThreadLocal<V?>, value: V, block: () -> T): T {
+        val previous = holder.get()
+        holder.set(value)
         return try {
             block()
         } finally {
-            if (previous == null) sizeOverride.remove() else sizeOverride.set(previous)
+            if (previous == null) holder.remove() else holder.set(previous)
         }
     }
 
