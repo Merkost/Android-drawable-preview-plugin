@@ -1,34 +1,36 @@
 package com.merkost.drawablepreview.settings
 
-import com.intellij.openapi.options.Configurable
-import com.merkost.drawablepreview.getDigits
-import javax.swing.JComponent
+import com.intellij.openapi.options.BoundConfigurable
+import com.intellij.openapi.ui.DialogPanel
+import com.intellij.ui.dsl.builder.COLUMNS_TINY
+import com.intellij.ui.dsl.builder.bindIntText
+import com.intellij.ui.dsl.builder.columns
+import com.intellij.ui.dsl.builder.panel
 
-class SettingsConfigurable : Configurable {
+class SettingsConfigurable : BoundConfigurable("Android drawable preview") {
 
-    private var settingsUi: SettingsUi? = null
+    private var previewSize: Int = SettingsUtils.getPreviewSize()
 
-    override fun isModified(): Boolean {
-        return settingsUi?.previewSizeTextField?.let {
-            SettingsUtils.isModified(it.text.getDigits() ?: 0)
-        } ?: false
-    }
-
-    override fun getDisplayName() = "Android drawable preview"
-
-    override fun apply() {
-        settingsUi?.previewSizeTextField?.let {
-            SettingsUtils.apply(it.text.getDigits() ?: 0)
+    override fun createPanel(): DialogPanel = panel {
+        row("Preview size (px):") {
+            intTextField(SettingsUtils.MIN_PREVIEW_SIZE..SettingsUtils.MAX_PREVIEW_SIZE)
+                .bindIntText({ previewSize }, { previewSize = it })
+                .columns(COLUMNS_TINY)
         }
     }
 
-    override fun createComponent(): JComponent? {
-        settingsUi = SettingsUi()
-        settingsUi?.previewSizeTextField?.text = SettingsUtils.getPreviewSize().toString()
-        return settingsUi?.rootPanel
+    override fun isModified(): Boolean {
+        super.isModified()
+        return SettingsUtils.isModified(previewSize)
     }
 
-    override fun disposeUIResources() {
-        settingsUi = null
+    override fun apply() {
+        super.apply()
+        SettingsUtils.apply(previewSize)
+    }
+
+    override fun reset() {
+        super.reset()
+        previewSize = SettingsUtils.getPreviewSize()
     }
 }
