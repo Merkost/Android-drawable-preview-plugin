@@ -50,7 +50,7 @@ object DrawableInflater {
             COLOR_DRAWABLE -> ColorDrawable()
             SHAPE_DRAWABLE -> GradientDrawable()
             SCALE -> ScaleDrawable()
-            CLIP -> ItemDrawableInflater.getDrawable(element).second
+            CLIP -> ItemDrawableInflater.resolve(element).drawableOrNull
             ROTATE -> RotateDrawable()
             ANIMATED_ROTATE -> RotateDrawable()
             INSET_DRAWABLE -> InsetDrawable()
