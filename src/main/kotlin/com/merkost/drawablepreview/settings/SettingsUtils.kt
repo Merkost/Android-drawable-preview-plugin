@@ -17,6 +17,7 @@ object SettingsUtils {
     // would silently reset everyone's settings.
     private const val PROPERTIES_SIZE = "com.mistamek.drawablepreview.settings.PropertiesSize"
     private const val PROPERTIES_ENABLED = "com.merkost.drawablepreview.settings.Enabled"
+    private const val PROPERTIES_MASK_SHAPE = "com.merkost.drawablepreview.settings.MaskShape"
 
     // Per-thread render size + adaptive-icon mask overrides. Lets one-off
     // renders (the right-click preview popup, the hover tooltip) request
@@ -25,7 +26,29 @@ object SettingsUtils {
     private val sizeOverride = ThreadLocal<Int?>()
     private val maskOverride = ThreadLocal<MaskShape?>()
 
-    fun getAdaptiveIconMask(): MaskShape = maskOverride.get() ?: MaskShape.DEFAULT
+    /**
+     * The mask used when rendering an adaptive icon. Honours the per-render
+     * thread-local override first, then the persisted user choice, then the
+     * built-in default (CIRCLE).
+     */
+    fun getAdaptiveIconMask(): MaskShape = maskOverride.get() ?: getPersistedMaskShape()
+
+    fun getPersistedMaskShape(): MaskShape {
+        // PropertiesComponent.getInstance() NPEs when no IntelliJ Application is
+        // running (e.g. plain JUnit tests). Fall back to default in that case.
+        val props = runCatching { PropertiesComponent.getInstance() }.getOrNull() ?: return MaskShape.DEFAULT
+        val name = props.getValue(PROPERTIES_MASK_SHAPE) ?: return MaskShape.DEFAULT
+        return runCatching { MaskShape.valueOf(name) }.getOrDefault(MaskShape.DEFAULT)
+    }
+
+    fun setPersistedMaskShape(shape: MaskShape) {
+        val props = runCatching { PropertiesComponent.getInstance() }.getOrNull() ?: return
+        props.setValue(PROPERTIES_MASK_SHAPE, shape.name, MaskShape.DEFAULT.name)
+        IconPreviewFactory.invalidateAll()
+        ProjectManager.getInstance().openProjects.forEach {
+            ProjectView.getInstance(it).refresh()
+        }
+    }
 
     fun getPreviewSize(): Int =
         sizeOverride.get()

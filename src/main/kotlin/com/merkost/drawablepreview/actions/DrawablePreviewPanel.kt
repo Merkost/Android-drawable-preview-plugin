@@ -32,7 +32,7 @@ class DrawablePreviewPanel(
 ) : JPanel(BorderLayout()) {
 
     private val isAdaptiveIcon: Boolean = isAdaptiveIcon(psiFile)
-    private var maskShape: MaskShape = MaskShape.DEFAULT
+    private var maskShape: MaskShape = SettingsUtils.getPersistedMaskShape()
 
     // Lazily-evaluated selector states; null if the file isn't a selector.
     private val selectorStates: List<SelectorState>? = psiFile.virtualFile?.path?.let {
@@ -88,10 +88,11 @@ class DrawablePreviewPanel(
     private fun buildMaskChooser(): JPanel = chooserRow(
         label = "Mask",
         items = MaskShape.values().asList(),
-        default = MaskShape.DEFAULT,
+        default = maskShape,
         labelOf = { it.displayName },
     ) {
         maskShape = it
+        SettingsUtils.setPersistedMaskShape(it)
         canvas.setImage(renderImage())
     }
 
