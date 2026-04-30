@@ -38,7 +38,7 @@ object DrawableInflater {
         return drawable
     }
 
-    private fun createDrawable(element: Element): Drawable? {
+    internal fun createDrawable(element: Element): Drawable? {
         return when (element.tagName) {
             SELECTOR_DRAWABLE -> SelectorDrawable()
             ANIMATED_SELECTOR_DRAWABLE -> SelectorDrawable()

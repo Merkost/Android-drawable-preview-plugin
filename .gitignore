@@ -4,3 +4,6 @@ out
 build
 *.iml
 /local.properties
+.intellijPlatform
+.DS_Store
+/.claude/
