@@ -15,6 +15,7 @@ import javax.swing.Icon
 class DrawablePreviewIconProvider : IconProvider() {
 
     override fun getIcon(element: PsiElement, flags: Int): Icon? {
+        if (!SettingsUtils.isEnabled()) return null
         if (element !is PsiFile) return null
         val virtualFile = element.virtualFile ?: return null
         val path = virtualFile.path

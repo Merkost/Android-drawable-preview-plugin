@@ -11,21 +11,31 @@ object SettingsUtils {
     const val MIN_PREVIEW_SIZE = 16
     const val MAX_PREVIEW_SIZE = 256
 
-    // Property key kept in the original (mistamek) namespace for backwards
+    // Property keys kept in the original (mistamek) namespace for backwards
     // compatibility with users migrating from the upstream fork — changing it
-    // would silently reset everyone's preview size.
+    // would silently reset everyone's settings.
     private const val PROPERTIES_SIZE = "com.mistamek.drawablepreview.settings.PropertiesSize"
+    private const val PROPERTIES_ENABLED = "com.merkost.drawablepreview.settings.Enabled"
 
-    fun getPreviewSize() = PropertiesComponent.getInstance().getInt(PROPERTIES_SIZE, Constants.ICON_SIZE)
+    fun getPreviewSize(): Int =
+        PropertiesComponent.getInstance().getInt(PROPERTIES_SIZE, Constants.ICON_SIZE)
 
-    fun isModified(previewSize: Int): Boolean {
-        return previewSize.clampToValidRange() != getPreviewSize()
+    fun isEnabled(): Boolean =
+        PropertiesComponent.getInstance().getBoolean(PROPERTIES_ENABLED, true)
+
+    fun isModified(previewSize: Int, enabled: Boolean): Boolean =
+        previewSize.clampToValidRange() != getPreviewSize() || enabled != isEnabled()
+
+    fun apply(previewSize: Int, enabled: Boolean) {
+        val clamped = previewSize.clampToValidRange()
+        val props = PropertiesComponent.getInstance()
+        props.setValue(PROPERTIES_SIZE, clamped, Constants.ICON_SIZE)
+        props.setValue(PROPERTIES_ENABLED, enabled, true)
+        IconPreviewFactory.invalidateAll()
+        refreshOpenProjectViews()
     }
 
-    fun apply(previewSize: Int) {
-        val clamped = previewSize.clampToValidRange()
-        PropertiesComponent.getInstance().setValue(PROPERTIES_SIZE, clamped, Constants.ICON_SIZE)
-        IconPreviewFactory.invalidateAll()
+    private fun refreshOpenProjectViews() {
         ProjectManager.getInstance().openProjects.forEach {
             ProjectView.getInstance(it).refresh()
         }
