@@ -3,7 +3,9 @@ package com.merkost.drawablepreview.factories
 import com.intellij.util.ui.UIUtil
 
 object Constants {
-    val ICON_SIZE = if (UIUtil.isRetina()) 36 else 16
+    // Recomputed on each access so monitor changes (retina ↔ non-retina) are
+    // picked up without restarting the IDE.
+    val ICON_SIZE: Int get() = if (UIUtil.isRetina()) 36 else 16
     const val XML_TYPE = ".xml"
     const val SVG_TYPE = ".svg"
 
