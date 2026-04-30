@@ -109,18 +109,17 @@ object XmlImageFactory {
 
     private fun resolveStringValue(resolver: ResourceResolver, value: String): String {
         val resValue = findResValue(resolver, value) ?: return value
-        return resolveNullableResValue(resolver, resValue)?.value ?: value
+        return resolver.resolveResValue(resValue)?.value ?: value
     }
 
     private fun findResValue(resolver: ResourceResolver, value: String): ResourceValue? {
-        return resolver.dereference(ResourceValueImpl(ResourceNamespace.RES_AUTO, ResourceType.ID, "com.android.ide.common.rendering.api.RenderResources", value))
-    }
-
-    private fun resolveNullableResValue(resolver: ResourceResolver, res: ResourceValue?): ResourceValue? {
-        if (res == null) {
-            return null
-        }
-        return resolver.resolveResValue(res)
+        // Use the actual resource type from the parsed reference. The earlier
+        // hardcoded ResourceType.ID coerced @drawable/@color/@dimen lookups
+        // through ID, which silently failed to resolve cross-type references.
+        val url = ResourceUrl.parse(value) ?: return null
+        return resolver.dereference(
+            ResourceValueImpl(ResourceNamespace.RES_AUTO, url.type, url.name, value)
+        )
     }
 
     private fun isReference(attributeValue: String) = ResourceUrl.parse(attributeValue) != null
