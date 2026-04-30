@@ -118,15 +118,30 @@ object XmlImageFactory {
     private fun isReference(attributeValue: String) = ResourceUrl.parse(attributeValue) != null
 
     /**
-     * True if the file lives directly inside a resource folder named
-     * "drawable" or "mipmap" (with optional config qualifiers like "-night",
-     * "-anydpi-v26"). Matches path segments rather than substrings so paths
-     * like "/Users/foo/drawable_helpers/x.xml" don't false-match.
+     * True if the file lives directly inside a resource folder we recognise.
+     * Matches path segments rather than substrings so paths like
+     * "/Users/foo/drawable_helpers/x.xml" don't false-match.
+     *
+     * Recognised:
+     *  - Android: ".../drawable/" or ".../mipmap/" with optional config
+     *    qualifiers ("-night", "-anydpi-v26", etc.).
+     *  - Compose Multiplatform: ".../composeResources/drawable*\/" (any source
+     *    set; CMP allows the same qualifier suffixes for locale variants).
      */
-    private fun String.isInResourceFolder(): Boolean {
-        val parent = substringBeforeLast('/', missingDelimiterValue = "")
-        val folder = parent.substringAfterLast('/').substringBefore('-')
-        return folder in Constants.SUPPORTED_FOLDER_PREFIXES
+    internal fun String.isInResourceFolder(): Boolean {
+        val segments = split('/').filter { it.isNotEmpty() }
+        if (segments.size < 2) return false
+        val parent = segments[segments.size - 2]
+        val parentPrefix = parent.substringBefore('-')
+
+        if (parentPrefix in Constants.SUPPORTED_FOLDER_PREFIXES) return true
+
+        if (parentPrefix == "drawable" &&
+            segments.size >= 3 &&
+            segments[segments.size - 3] == "composeResources"
+        ) return true
+
+        return false
     }
 
     private fun getResourceResolver(element: PsiFile?): ResourceResolver? {
