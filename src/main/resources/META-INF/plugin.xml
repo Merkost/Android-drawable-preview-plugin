@@ -119,6 +119,11 @@
             enabledByDefault="true"
             level="WARNING"
             implementationClass="com.merkost.drawablepreview.inspections.UnusedDrawableInspection" />
+
+        <toolWindow id="Drawables"
+            anchor="right"
+            secondary="true"
+            factoryClass="com.merkost.drawablepreview.toolwindow.ResourceManagerToolWindowFactory" />
     </extensions>
 
     <actions>
