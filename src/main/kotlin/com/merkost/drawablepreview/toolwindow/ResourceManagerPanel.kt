@@ -22,8 +22,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.GridItemSpan
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
+import androidx.compose.foundation.lazy.grid.itemsIndexed
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
@@ -66,11 +68,26 @@ import androidx.compose.foundation.Image as ComposeImage
 private const val THUMB_SIZE_DP = 72
 private const val CELL_SIZE_DP = 96
 
+enum class GroupBy(val displayName: String) {
+    NONE("None"),
+    SOURCE_FOLDER("Source folder"),
+    KIND("Kind"),
+}
+
+enum class SortBy(val displayName: String) {
+    NAME_ASC("Name ↑"),
+    NAME_DESC("Name ↓"),
+    KIND("Kind"),
+    SIZE("Size"),
+}
+
 @Composable
 fun ResourceManagerPanel(project: Project) {
     var entries by remember { mutableStateOf<List<DrawableEntry>>(emptyList()) }
     var query by remember { mutableStateOf(TextFieldValue("")) }
     var enabledKinds by remember { mutableStateOf(DrawableEntry.Kind.values().toSet()) }
+    var groupBy by remember { mutableStateOf(GroupBy.NONE) }
+    var sortBy by remember { mutableStateOf(SortBy.NAME_ASC) }
     val scope = rememberCoroutineScope()
 
     suspend fun rescan() {
@@ -104,9 +121,28 @@ fun ResourceManagerPanel(project: Project) {
     val filtered by remember {
         derivedStateOf {
             val needle = query.text.trim()
-            entries.filter { entry ->
-                entry.kind in enabledKinds &&
-                        (needle.isEmpty() || entry.baseName.contains(needle, ignoreCase = true))
+            val sorted = entries
+                .filter { entry ->
+                    entry.kind in enabledKinds &&
+                            (needle.isEmpty() || entry.baseName.contains(needle, ignoreCase = true))
+                }
+                .sortedWith(sortBy.comparator())
+            sorted
+        }
+    }
+
+    val grouped by remember {
+        derivedStateOf {
+            when (groupBy) {
+                GroupBy.NONE -> listOf(null to filtered)
+                GroupBy.SOURCE_FOLDER -> filtered
+                    .groupBy { it.sourceFolder }
+                    .toSortedMap()
+                    .map { (k, v) -> k to v }
+                GroupBy.KIND -> filtered
+                    .groupBy { it.kind.label }
+                    .toSortedMap()
+                    .map { (k, v) -> k to v }
             }
         }
     }
@@ -127,6 +163,24 @@ fun ResourceManagerPanel(project: Project) {
             },
         )
 
+        Spacer(Modifier.height(4.dp))
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+            EnumChooser(
+                label = "Group:",
+                values = GroupBy.values().toList(),
+                selected = groupBy,
+                labelOf = GroupBy::displayName,
+                onSelected = { groupBy = it },
+            )
+            EnumChooser(
+                label = "Sort:",
+                values = SortBy.values().toList(),
+                selected = sortBy,
+                labelOf = SortBy::displayName,
+                onSelected = { sortBy = it },
+            )
+        }
+
         Spacer(Modifier.height(6.dp))
         Text(
             text = when {
@@ -144,11 +198,55 @@ fun ResourceManagerPanel(project: Project) {
             verticalArrangement = Arrangement.spacedBy(8.dp),
             horizontalArrangement = Arrangement.spacedBy(8.dp),
         ) {
-            items(filtered, key = { it.file.path }) { entry ->
-                DrawableCell(project, entry)
+            grouped.forEach { (header, list) ->
+                if (header != null) {
+                    item(span = { GridItemSpan(maxLineSpan) }) {
+                        Text(
+                            text = "$header  ·  ${list.size}",
+                            modifier = Modifier.padding(top = 4.dp, bottom = 2.dp),
+                        )
+                    }
+                }
+                items(list, key = { it.file.path }) { entry ->
+                    DrawableCell(project, entry)
+                }
             }
         }
     }
+}
+
+@Composable
+private fun <T> EnumChooser(
+    label: String,
+    values: List<T>,
+    selected: T,
+    labelOf: (T) -> String,
+    onSelected: (T) -> Unit,
+) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        Text("$label ", modifier = Modifier.padding(end = 4.dp))
+        values.forEach { value ->
+            Text(
+                text = labelOf(value),
+                modifier = Modifier
+                    .clickable { onSelected(value) }
+                    .padding(horizontal = 6.dp, vertical = 2.dp)
+                    .background(
+                        if (value == selected) JewelTheme.globalColors.borders.normal
+                        else JewelTheme.globalColors.panelBackground
+                    )
+                    .padding(horizontal = 4.dp, vertical = 1.dp),
+            )
+        }
+    }
+}
+
+private fun SortBy.comparator(): Comparator<DrawableEntry> = when (this) {
+    SortBy.NAME_ASC -> compareBy { it.baseName.lowercase() }
+    SortBy.NAME_DESC -> compareByDescending { it.baseName.lowercase() }
+    SortBy.KIND -> compareBy({ it.kind.ordinal }, { it.baseName.lowercase() })
+    SortBy.SIZE -> compareByDescending<DrawableEntry> { it.file.length }
+        .then(compareBy { it.baseName.lowercase() })
 }
 
 @Composable
