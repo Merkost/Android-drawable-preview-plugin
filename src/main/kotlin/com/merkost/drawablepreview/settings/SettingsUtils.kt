@@ -17,8 +17,25 @@ object SettingsUtils {
     private const val PROPERTIES_SIZE = "com.mistamek.drawablepreview.settings.PropertiesSize"
     private const val PROPERTIES_ENABLED = "com.merkost.drawablepreview.settings.Enabled"
 
+    // Per-thread render size override. Lets one-off renders (the right-click
+    // preview popup, the hover tooltip) request a different size than the
+    // project-view default without wiring a parameter through every drawable.
+    private val sizeOverride = ThreadLocal<Int?>()
+
     fun getPreviewSize(): Int =
-        PropertiesComponent.getInstance().getInt(PROPERTIES_SIZE, Constants.ICON_SIZE)
+        sizeOverride.get()
+            ?: PropertiesComponent.getInstance().getInt(PROPERTIES_SIZE, Constants.ICON_SIZE)
+
+    /** Render `block` with [size] in place of the configured preview size. */
+    fun <T> withRenderSize(size: Int, block: () -> T): T {
+        val previous = sizeOverride.get()
+        sizeOverride.set(size)
+        return try {
+            block()
+        } finally {
+            if (previous == null) sizeOverride.remove() else sizeOverride.set(previous)
+        }
+    }
 
     fun isEnabled(): Boolean =
         PropertiesComponent.getInstance().getBoolean(PROPERTIES_ENABLED, true)

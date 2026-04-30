@@ -39,4 +39,14 @@
             instance="com.merkost.drawablepreview.settings.SettingsConfigurable" />
     </extensions>
 
+    <actions>
+        <action id="com.merkost.drawablepreview.ShowDrawablePreview"
+            class="com.merkost.drawablepreview.actions.ShowDrawablePreviewAction"
+            text="Show Drawable Preview"
+            description="Open a larger preview of this drawable on a switchable background">
+            <add-to-group group-id="ProjectViewPopupMenu" anchor="after" relative-to-action="OpenInBrowser" />
+            <add-to-group group-id="EditorTabPopupMenu" anchor="last" />
+        </action>
+    </actions>
+
 </idea-plugin>
