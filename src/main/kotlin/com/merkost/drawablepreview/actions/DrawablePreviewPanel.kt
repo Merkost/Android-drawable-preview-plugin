@@ -8,6 +8,8 @@ import com.merkost.drawablepreview.factories.IconPreviewFactory
 import com.merkost.drawablepreview.factories.XmlImageFactory
 import com.merkost.drawablepreview.settings.SettingsUtils
 import java.awt.BorderLayout
+import java.awt.Color
+import java.awt.Cursor
 import java.awt.Dimension
 import java.awt.FlowLayout
 import java.awt.Graphics
@@ -15,8 +17,11 @@ import java.awt.Graphics2D
 import java.awt.RenderingHints
 import java.awt.Toolkit
 import java.awt.datatransfer.DataFlavor
+import java.awt.datatransfer.StringSelection
 import java.awt.datatransfer.Transferable
 import java.awt.datatransfer.UnsupportedFlavorException
+import java.awt.event.MouseAdapter
+import java.awt.event.MouseEvent
 import java.awt.image.BufferedImage
 import javax.swing.BorderFactory
 import javax.swing.Box
@@ -45,6 +50,7 @@ class DrawablePreviewPanel(
     }
 
     private val canvas = PreviewCanvas(initialImage(), renderSize)
+    private val palette = PaletteStrip(initialImage())
 
     init {
         border = JBUI.Borders.empty(8)
@@ -73,6 +79,10 @@ class DrawablePreviewPanel(
             column.add(Box.createVerticalStrut(4))
             column.add(buildMaskChooser())
         }
+        if (palette.hasColors()) {
+            column.add(Box.createVerticalStrut(4))
+            column.add(palette)
+        }
         column.add(Box.createVerticalStrut(4))
         column.add(buildActionsRow())
         return column
@@ -93,6 +103,49 @@ class DrawablePreviewPanel(
         Toolkit.getDefaultToolkit().systemClipboard.setContents(transferable, null)
     }
 
+    /**
+     * Horizontal row of clickable color chips extracted from the rendered
+     * image. Click a chip to copy its hex value to the clipboard.
+     */
+    private class PaletteStrip(initialImage: BufferedImage?) : JPanel(FlowLayout(FlowLayout.CENTER, 4, 4)) {
+        init {
+            setImage(initialImage)
+        }
+
+        fun hasColors(): Boolean = componentCount > 1  // > 1 because of the leading label
+
+        fun setImage(image: BufferedImage?) {
+            removeAll()
+            val colors = if (image != null) ColorPalette.extract(image) else emptyList()
+            if (colors.isEmpty()) {
+                revalidate(); repaint(); return
+            }
+            add(JLabel("Palette:"))
+            colors.forEach { color -> add(buildChip(color)) }
+            revalidate(); repaint()
+        }
+
+        private fun buildChip(color: Color): JPanel {
+            val hex = ColorPalette.toHex(color)
+            return object : JPanel() {
+                init {
+                    preferredSize = Dimension(24, 24)
+                    background = color
+                    border = BorderFactory.createLineBorder(JBUI.CurrentTheme.Label.foreground(), 1)
+                    cursor = Cursor.getPredefinedCursor(Cursor.HAND_CURSOR)
+                    toolTipText = "Copy $hex"
+                    addMouseListener(object : MouseAdapter() {
+                        override fun mouseClicked(e: MouseEvent) {
+                            Toolkit.getDefaultToolkit().systemClipboard
+                                .setContents(StringSelection(hex), null)
+                            toolTipText = "Copied $hex"
+                        }
+                    })
+                }
+            }
+        }
+    }
+
     private class ImageTransferable(private val image: BufferedImage) : Transferable {
         override fun getTransferDataFlavors(): Array<DataFlavor> = arrayOf(DataFlavor.imageFlavor)
         override fun isDataFlavorSupported(flavor: DataFlavor): Boolean = flavor == DataFlavor.imageFlavor
@@ -107,7 +160,10 @@ class DrawablePreviewPanel(
         items = states,
         default = states.first(),
         labelOf = { it.label },
-    ) { canvas.setImage(it.image) }
+    ) {
+        canvas.setImage(it.image)
+        palette.setImage(it.image)
+    }
 
     private fun buildBackgroundChooser(): JPanel = chooserRow(
         label = "Background",
@@ -124,7 +180,9 @@ class DrawablePreviewPanel(
     ) {
         maskShape = it
         SettingsUtils.setPersistedMaskShape(it)
-        canvas.setImage(renderImage())
+        val rendered = renderImage()
+        canvas.setImage(rendered)
+        palette.setImage(rendered)
     }
 
     private fun <T> chooserRow(
