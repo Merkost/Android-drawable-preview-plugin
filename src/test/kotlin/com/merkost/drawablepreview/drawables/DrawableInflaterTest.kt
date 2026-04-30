@@ -112,6 +112,12 @@ class DrawableInflaterTest {
     }
 
     @Test
+    fun `animated-vector tag inflates AnimatedVectorDrawable`() {
+        val drawable = DrawableInflater.createDrawable(rootOf("<animated-vector/>"))
+        assertTrue(drawable is com.merkost.drawablepreview.drawables.dom.AnimatedVectorDrawable)
+    }
+
+    @Test
     fun `unknown tag returns null`() {
         assertNull(DrawableInflater.createDrawable(rootOf("<not-a-real-drawable/>")))
     }

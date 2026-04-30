@@ -1,6 +1,7 @@
 package com.merkost.drawablepreview.drawables
 
 import com.merkost.drawablepreview.drawables.dom.AdaptiveIconDrawable
+import com.merkost.drawablepreview.drawables.dom.AnimatedVectorDrawable
 import com.merkost.drawablepreview.drawables.dom.BitmapDrawable
 import com.merkost.drawablepreview.drawables.dom.ColorDrawable
 import com.merkost.drawablepreview.drawables.dom.Drawable
@@ -31,6 +32,7 @@ object DrawableInflater {
     private const val ANIMATED_ROTATE = "animated-rotate"
     private const val INSET_DRAWABLE = "inset"
     private const val BITMAP = "bitmap"
+    private const val ANIMATED_VECTOR = "animated-vector"
 
     fun getDrawable(element: Element): Drawable? {
         val drawable = createDrawable(element)
@@ -55,6 +57,7 @@ object DrawableInflater {
             ANIMATED_ROTATE -> RotateDrawable()
             INSET_DRAWABLE -> InsetDrawable()
             BITMAP -> BitmapDrawable()
+            ANIMATED_VECTOR -> AnimatedVectorDrawable()
             else -> null
         }
     }
