@@ -52,6 +52,13 @@
             <add-to-group group-id="ProjectViewPopupMenu" anchor="after" relative-to-action="OpenInBrowser" />
             <add-to-group group-id="EditorTabPopupMenu" anchor="last" />
         </action>
+        <action id="com.merkost.drawablepreview.FindDrawableUsages"
+            class="com.merkost.drawablepreview.actions.FindDrawableUsagesAction"
+            text="Find Drawable Usages"
+            description="Find all R.drawable / Res.drawable / @drawable references to this file">
+            <add-to-group group-id="ProjectViewPopupMenu" anchor="after" relative-to-action="com.merkost.drawablepreview.ShowDrawablePreview" />
+            <add-to-group group-id="EditorTabPopupMenu" anchor="last" />
+        </action>
     </actions>
 
 </idea-plugin>
