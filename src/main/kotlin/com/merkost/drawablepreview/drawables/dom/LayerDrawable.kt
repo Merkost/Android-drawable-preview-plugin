@@ -5,12 +5,12 @@ import com.merkost.drawablepreview.drawables.Utils
 import com.merkost.drawablepreview.drawables.forEachAsElement
 import org.w3c.dom.Element
 import java.awt.image.BufferedImage
-import java.lang.UnsupportedOperationException
 
 class LayerDrawable : Drawable() {
 
     companion object {
         private const val ITEM_TAG = "item"
+        private const val MAX_PADDING_FRACTION = 0.3F
     }
 
     private val drawables = ArrayList<LayerDrawableItem>()
@@ -32,23 +32,32 @@ class LayerDrawable : Drawable() {
     }
 
     private fun resolveDimens(image: BufferedImage) {
-        val maxAttrSize = drawables.flatMap { listOf(it.height, it.width) }.max() ?: 0
-        if (maxAttrSize > 0) {
-            throw UnsupportedOperationException()
+        // Find the largest specified padding so we can scale all of them
+        // proportionally to fit inside MAX_PADDING_FRACTION of the preview.
+        val maxPaddingArg = drawables
+            .flatMap { listOf(it.left, it.top, it.right, it.bottom) }
+            .maxOrNull()
+            ?.toFloat()
+            ?: 0F
+        val maxPaddingWidth = image.width * MAX_PADDING_FRACTION
+
+        drawables.forEach { item ->
+            item.width = image.width
+            item.height = image.height
+
+            // Without any specified padding everything stretches edge-to-edge,
+            // which matches Android's default for layer-list items.
+            if (maxPaddingArg > 0F) {
+                item.left = ((item.left / maxPaddingArg) * maxPaddingWidth).toInt()
+                item.top = ((item.top / maxPaddingArg) * maxPaddingWidth).toInt()
+                item.right = ((item.right / maxPaddingArg) * maxPaddingWidth).toInt()
+                item.bottom = ((item.bottom / maxPaddingArg) * maxPaddingWidth).toInt()
+            }
         }
-
-        val maxPaddingArg = drawables.flatMap { listOf(it.left, it.top, it.right, it.bottom) }.max()?.toFloat() ?: 0F
-        val maxPaddingWidth = image.width * 0.3F
-
-        drawables.forEach { layerDrawableItem ->
-            layerDrawableItem.width = image.width
-            layerDrawableItem.height = image.height
-
-            layerDrawableItem.left = ((layerDrawableItem.left / maxPaddingArg) * maxPaddingWidth).toInt()
-            layerDrawableItem.top = ((layerDrawableItem.top / maxPaddingArg) * maxPaddingWidth).toInt()
-            layerDrawableItem.right = ((layerDrawableItem.right / maxPaddingArg) * maxPaddingWidth).toInt()
-            layerDrawableItem.bottom = ((layerDrawableItem.bottom / maxPaddingArg) * maxPaddingWidth).toInt()
-        }
+        // Note: we ignore explicit android:width/android:height on items.
+        // Implementing them properly requires per-item gravity resolution; the
+        // preview is approximate by design and we'd rather render a slightly
+        // wrong layer than crash the project view.
     }
 }
 
