@@ -122,8 +122,6 @@ class GradientDrawable : Drawable() {
     private var bottomLeftHeightRadius = 0f
 
     override fun inflate(element: Element) {
-        super.inflate(element)
-
         tintColor = Utils.parseAttributeAsColor(element.getAttribute(TINT), tintColor)
 
         element.getAttribute(SHAPE)?.let {
@@ -215,8 +213,6 @@ class GradientDrawable : Drawable() {
     }
 
     override fun draw(outputImage: BufferedImage) {
-        super.draw(outputImage)
-
         resolveDimensions(outputImage)
 
         BufferedImage(resolvedWidth, resolvedHeight, BufferedImage.TYPE_INT_ARGB).also { resizedImage ->

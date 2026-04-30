@@ -14,7 +14,6 @@ class LevelListDrawable : Drawable() {
     private var drawable: Drawable? = null
 
     override fun inflate(element: Element) {
-        super.inflate(element)
         element.childNodes?.forEachAsElement { childElement ->
             if (childElement.tagName == ITEM_TAG) {
                 drawable = ItemDrawableInflater.getDrawableWithInflate(childElement)
@@ -24,7 +23,6 @@ class LevelListDrawable : Drawable() {
     }
 
     override fun draw(outputImage: BufferedImage) {
-        super.draw(outputImage)
         drawable?.draw(outputImage)
     }
 }

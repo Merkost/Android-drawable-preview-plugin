@@ -23,7 +23,6 @@ class InsetDrawable : Drawable() {
     private var insetBottom = 0
 
     override fun inflate(element: Element) {
-        super.inflate(element)
         drawable = ItemDrawableInflater.getDrawableWithInflate(element)
 
         Utils.parseAttributeAsInt(element.getAttribute(INSET), 0).also { inset ->
@@ -40,8 +39,6 @@ class InsetDrawable : Drawable() {
     }
 
     override fun draw(outputImage: BufferedImage) {
-        super.draw(outputImage)
-
         drawable?.also { drawable ->
             val maxValueAsFloat = arrayOf(insetTop, insetLeft, insetRight, insetBottom).max().toFloat()
             val maxInsetSize = outputImage.width / 5

@@ -25,7 +25,6 @@ class AdaptiveIconDrawable : Drawable() {
     private var foreground: Drawable? = null
 
     override fun inflate(element: Element) {
-        super.inflate(element)
         element.childNodes?.forEachAsElement { childNode ->
             ItemDrawableInflater.getDrawableWithInflate(childNode)?.also { drawable ->
                 when (childNode.tagName) {
@@ -37,7 +36,6 @@ class AdaptiveIconDrawable : Drawable() {
     }
 
     override fun draw(outputImage: BufferedImage) {
-        super.draw(outputImage)
         val outputSize = minOf(outputImage.width, outputImage.height)
         if (outputSize <= 0) return
 

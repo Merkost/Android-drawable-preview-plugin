@@ -16,8 +16,6 @@ class LayerDrawable : Drawable() {
     private val drawables = ArrayList<LayerDrawableItem>()
 
     override fun inflate(element: Element) {
-        super.inflate(element)
-
         element.childNodes?.forEachAsElement { childNode ->
             if (childNode.tagName == ITEM_TAG) {
                 drawables.add(LayerDrawableItem((childNode)))
@@ -26,7 +24,6 @@ class LayerDrawable : Drawable() {
     }
 
     override fun draw(outputImage: BufferedImage) {
-        super.draw(outputImage)
         resolveDimens(outputImage)
         drawables.forEach { it.draw(outputImage) }
     }
@@ -88,8 +85,6 @@ class LayerDrawableItem(element: Element) : Drawable() {
     }
 
     override fun inflate(element: Element) {
-        super.inflate(element)
-
         width = Utils.parseAttributeAsInt(element.getAttribute(WIDTH), width)
         height = Utils.parseAttributeAsInt(element.getAttribute(HEIGHT), height)
 
@@ -104,7 +99,6 @@ class LayerDrawableItem(element: Element) : Drawable() {
     }
 
     override fun draw(outputImage: BufferedImage) {
-        super.draw(outputImage)
         drawable?.also { drawable ->
             val resolvedWidth = width - left - right
             val resolvedHeight = height - top - bottom

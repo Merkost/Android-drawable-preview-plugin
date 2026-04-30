@@ -18,7 +18,6 @@ class BitmapDrawable : Drawable() {
     private var tintColor: Color? = null
 
     override fun inflate(element: Element) {
-        super.inflate(element)
         childImage = element.getAttribute(SRC)
                 ?.let { Utils.getPsiFileFromPath(it) }
                 ?.run { IconPreviewFactory.getImage(this) }
@@ -27,7 +26,6 @@ class BitmapDrawable : Drawable() {
     }
 
     override fun draw(outputImage: BufferedImage) {
-        super.draw(outputImage)
         childImage?.also { childImage ->
             val width = childImage.width
             val height = childImage.height

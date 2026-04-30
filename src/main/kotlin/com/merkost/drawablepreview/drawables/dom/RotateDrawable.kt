@@ -16,13 +16,11 @@ class RotateDrawable : Drawable() {
     private var degrees = 0
 
     override fun inflate(element: Element) {
-        super.inflate(element)
         drawable = ItemDrawableInflater.getDrawableWithInflate(element)
         degrees = Utils.parseAttributeAsInt(element.getAttribute(FROM_DEGREES), degrees)
     }
 
     override fun draw(outputImage: BufferedImage) {
-        super.draw(outputImage)
         drawable?.also { drawable ->
             val newImage = BufferedImage(outputImage.width, outputImage.height, BufferedImage.TYPE_INT_ARGB)
             drawable.draw(newImage)

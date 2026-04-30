@@ -18,7 +18,6 @@ class ColorDrawable() : Drawable() {
     private var color: Color? = null
 
     override fun inflate(element: Element) {
-        super.inflate(element)
         color = Utils.parseAttributeAsColor(element.getAttribute(COLOR), color)
     }
 

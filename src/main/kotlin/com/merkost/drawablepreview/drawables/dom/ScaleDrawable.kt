@@ -21,7 +21,6 @@ class ScaleDrawable : Drawable() {
     private var gravity = Gravity.LEFT or Gravity.TOP
 
     override fun inflate(element: Element) {
-        super.inflate(element)
         drawable = ItemDrawableInflater.getDrawableWithInflate(element)
 
         scaleHeight = Utils.parseAttributeAsPercent(element.getAttribute(SCALE_HEIGHT), scaleHeight)
@@ -30,8 +29,6 @@ class ScaleDrawable : Drawable() {
     }
 
     override fun draw(outputImage: BufferedImage) {
-        super.draw(outputImage)
-
         drawable?.also { drawable ->
             val width = round(outputImage.width * scaleWidth).toInt()
             val height = round(outputImage.height * scaleHeight).toInt()

@@ -19,7 +19,6 @@ class RippleDrawable : Drawable() {
     private var backgroundDrawables = ArrayList<Drawable>()
 
     override fun inflate(element: Element) {
-        super.inflate(element)
         color = Utils.parseAttributeAsColor(element.getAttribute(COLOR), color)?.let {
             Color(it.red, it.green, it.blue, (255 * 0.5F).toInt())
         } ?: color
@@ -32,7 +31,6 @@ class RippleDrawable : Drawable() {
     }
 
     override fun draw(outputImage: BufferedImage) {
-        super.draw(outputImage)
         backgroundDrawables.forEach { it.draw(outputImage) }
 
         outputImage.createGraphics().also { graphics ->

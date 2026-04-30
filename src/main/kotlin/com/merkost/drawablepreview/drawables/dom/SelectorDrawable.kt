@@ -18,7 +18,6 @@ open class SelectorDrawable : Drawable() {
     private var drawable: Drawable? = null
 
     override fun inflate(element: Element) {
-        super.inflate(element)
         inflateChildDrawables(element)
     }
 
