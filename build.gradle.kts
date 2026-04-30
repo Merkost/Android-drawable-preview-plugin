@@ -1,5 +1,7 @@
 import org.jetbrains.intellij.platform.gradle.TestFrameworkType
 import org.jetbrains.intellij.platform.gradle.extensions.IntelliJPlatformExtension
+import java.io.File
+import java.util.Properties
 
 plugins {
     kotlin("jvm") version "2.1.21"
@@ -22,10 +24,23 @@ repositories {
     }
 }
 
+// Optional per-developer override: point the build at a locally-installed
+// Android Studio (faster iteration, no ~1GB download). Add to local.properties:
+//   studio.dir=/Applications/Android Studio.app/Contents
+// Falls back to the pinned downloadable version below for fresh checkouts / CI.
+val localStudioDir: File? = run {
+    val props = Properties()
+    val file = rootProject.file("local.properties")
+    if (file.exists()) file.inputStream().use { props.load(it) }
+    val path = props.getProperty("studio.dir") ?: return@run null
+    val dir = File(path)
+    if (dir.isDirectory) dir else null
+}
+
 // The Android plugin ships with Android Studio but is NOT enumerated in
 // product-info.json's bundledPlugins list, so bundledPlugin("org.jetbrains.android")
 // fails. We resolve its on-disk path lazily via the IntelliJPlatformExtension.
-val androidPluginPath: Provider<java.io.File> = provider {
+val androidPluginPath: Provider<File> = provider {
     extensions.getByType<IntelliJPlatformExtension>()
         .platformPath
         .resolve("plugins/android")
@@ -37,11 +52,17 @@ dependencies {
     testImplementation("junit:junit:4.13.2")
 
     intellijPlatform {
-        // https://plugins.jetbrains.com/docs/intellij/android-studio-releases-list.html
-        androidStudio("2024.3.2.2")
+        if (localStudioDir != null) {
+            logger.lifecycle("Using local Android Studio at ${localStudioDir.absolutePath}")
+            local(localStudioDir)
+        } else {
+            // https://plugins.jetbrains.com/docs/intellij/android-studio-releases-list.html
+            androidStudio("2024.3.2.2")
+        }
 
-        // Kotlin is listed in product-info.json so we can use bundledPlugin().
-        bundledPlugin("org.jetbrains.kotlin")
+        // Note: we don't depend on the Kotlin plugin — our code doesn't use
+        // any of its APIs. Pulling it in only created Kotlin metadata version
+        // conflicts when running against a newer local AS than the pinned one.
 
         localPlugin(androidPluginPath)
 
