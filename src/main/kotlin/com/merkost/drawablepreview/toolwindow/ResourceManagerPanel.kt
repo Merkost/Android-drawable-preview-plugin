@@ -5,6 +5,12 @@ package com.merkost.drawablepreview.toolwindow
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.ui.input.pointer.PointerEventType
+import androidx.compose.ui.input.pointer.isSecondaryPressed
+import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.window.Popup
+import androidx.compose.ui.window.PopupProperties
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -181,13 +187,54 @@ private fun DrawableCell(project: Project, entry: DrawableEntry) {
     val bitmap = remember(entry.file.path, entry.file.modificationStamp) {
         loadThumbnail(project, entry)
     }
+    var menuExpanded by remember { mutableStateOf(false) }
+
     Column(
         modifier = Modifier
             .size(CELL_SIZE_DP.dp)
             .clickable { openFile(project, entry) }
+            .pointerInput(entry.file.path) {
+                awaitEachGesture {
+                    val event = awaitPointerEvent()
+                    if (event.type == androidx.compose.ui.input.pointer.PointerEventType.Press &&
+                        event.buttons.isSecondaryPressed
+                    ) {
+                        menuExpanded = true
+                        event.changes.forEach { it.consume() }
+                    }
+                }
+            }
             .padding(2.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
+        if (menuExpanded) {
+            Popup(
+                onDismissRequest = { menuExpanded = false },
+                properties = PopupProperties(focusable = true),
+            ) {
+                Column(
+                    modifier = Modifier
+                        .background(JewelTheme.globalColors.panelBackground)
+                        .border(1.dp, JewelTheme.globalColors.borders.normal)
+                        .padding(4.dp),
+                ) {
+                    CellMenuItem("Open in Editor") {
+                        menuExpanded = false; openFile(project, entry)
+                    }
+                    CellMenuItem("Reveal in Project View") {
+                        menuExpanded = false; revealInProjectView(project, entry)
+                    }
+                    CellMenuItem("Find Drawable Usages") {
+                        menuExpanded = false; findUsages(project, entry)
+                    }
+                    CellMenuItem("Copy Path") {
+                        menuExpanded = false
+                        java.awt.Toolkit.getDefaultToolkit().systemClipboard
+                            .setContents(java.awt.datatransfer.StringSelection(entry.file.path), null)
+                    }
+                }
+            }
+        }
         Box(
             modifier = Modifier
                 .size(THUMB_SIZE_DP.dp)
@@ -226,6 +273,43 @@ private fun loadThumbnail(project: Project, entry: DrawableEntry): ImageBitmap? 
 
 private fun openFile(project: Project, entry: DrawableEntry) {
     OpenFileDescriptor(project, entry.file).navigate(true)
+}
+
+private fun revealInProjectView(project: Project, entry: DrawableEntry) {
+    com.intellij.ide.projectView.ProjectView.getInstance(project).select(null, entry.file, true)
+}
+
+private fun findUsages(project: Project, entry: DrawableEntry) {
+    val baseName = baseNameFor(entry.file.name)
+    val findManager = com.intellij.find.FindManager.getInstance(project)
+    val model = findManager.findInProjectModel.clone().apply {
+        stringToFind = """\b(R|Res)\.drawable\.${Regex.escape(baseName)}\b|@drawable/${Regex.escape(baseName)}\b"""
+        isRegularExpressions = true
+        isCaseSensitive = true
+        isWholeWordsOnly = false
+        isProjectScope = true
+    }
+    com.intellij.find.findInProject.FindInProjectManager.getInstance(project)
+        .findInProject(com.intellij.openapi.actionSystem.DataContext.EMPTY_CONTEXT, model)
+}
+
+private fun baseNameFor(filename: String): String {
+    val lower = filename.lowercase()
+    return when {
+        lower.endsWith(".9.png") -> filename.substring(0, filename.length - ".9.png".length)
+        else -> filename.substringBeforeLast('.')
+    }
+}
+
+@Composable
+private fun CellMenuItem(label: String, onClick: () -> Unit) {
+    Text(
+        text = label,
+        modifier = Modifier
+            .fillMaxWidth()
+            .clickable(onClick = onClick)
+            .padding(horizontal = 12.dp, vertical = 6.dp),
+    )
 }
 
 /**
