@@ -39,6 +39,9 @@
             instance="com.merkost.drawablepreview.settings.SettingsConfigurable" />
 
         <projectViewNodeDecorator implementation="com.merkost.drawablepreview.DrawableNodeDecorator" />
+
+        <codeInsight.lineMarkerProvider language=""
+            implementationClass="com.merkost.drawablepreview.DrawableLineMarkerProvider" />
     </extensions>
 
     <actions>
