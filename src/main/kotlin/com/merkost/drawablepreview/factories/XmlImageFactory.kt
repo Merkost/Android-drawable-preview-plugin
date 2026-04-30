@@ -42,8 +42,7 @@ object XmlImageFactory {
     fun getDrawable(path: String): Drawable? = parseDocument(path)?.let { DrawableInflater.getDrawable(it.documentElement) }
 
     private fun parseDocument(path: String): Document? {
-        val supportedFolder = Constants.SUPPORTED_FOLDERS.fold(false) { acc, next -> acc || path.contains(next) }
-        if (!(path.endsWith(Constants.XML_TYPE) && supportedFolder)) {
+        if (!path.endsWith(Constants.XML_TYPE, ignoreCase = true) || !path.isInResourceFolder()) {
             return null
         }
 
@@ -117,6 +116,18 @@ object XmlImageFactory {
     }
 
     private fun isReference(attributeValue: String) = ResourceUrl.parse(attributeValue) != null
+
+    /**
+     * True if the file lives directly inside a resource folder named
+     * "drawable" or "mipmap" (with optional config qualifiers like "-night",
+     * "-anydpi-v26"). Matches path segments rather than substrings so paths
+     * like "/Users/foo/drawable_helpers/x.xml" don't false-match.
+     */
+    private fun String.isInResourceFolder(): Boolean {
+        val parent = substringBeforeLast('/', missingDelimiterValue = "")
+        val folder = parent.substringAfterLast('/').substringBefore('-')
+        return folder in Constants.SUPPORTED_FOLDER_PREFIXES
+    }
 
     private fun getResourceResolver(element: PsiFile?): ResourceResolver? {
         if (element == null) return null

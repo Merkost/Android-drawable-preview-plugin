@@ -6,5 +6,8 @@ object Constants {
     val ICON_SIZE = if (UIUtil.isRetina()) 36 else 16
     const val XML_TYPE = ".xml"
     const val SVG_TYPE = ".svg"
-    val SUPPORTED_FOLDERS = arrayOf("drawable", "mipmap")
+
+    // Resource folder prefixes — match path segments like "drawable" or
+    // "drawable-night-v21", but not arbitrary substrings like "drawable_helpers".
+    val SUPPORTED_FOLDER_PREFIXES = setOf("drawable", "mipmap")
 }
