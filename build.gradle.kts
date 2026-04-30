@@ -9,7 +9,7 @@ plugins {
 }
 
 group = "com.merkost.drawablepreview"
-version = "1.1.10"
+version = "1.2.0"
 
 // AS 2024.3 (243+) requires Java 21 source/target compatibility.
 java {
@@ -118,5 +118,14 @@ tasks {
             jvmTarget.set(org.jetbrains.kotlin.gradle.dsl.JvmTarget.JVM_21)
             freeCompilerArgs.add("-Xskip-metadata-version-check")
         }
+    }
+
+    // Pre-indexing plugin settings for Search Everywhere is nice-to-have but
+    // launches a sandboxed IDE which conflicts with any locally-running AS
+    // instance ("Only one instance of Studio can be run at a time"). Skip it
+    // by default — the plugin works fine without it and CI / dedicated build
+    // hosts can re-enable as needed.
+    buildSearchableOptions {
+        enabled = false
     }
 }

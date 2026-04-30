@@ -5,22 +5,86 @@
     <vendor email="merkostdev@gmail.com">Merkost</vendor>
 
     <description><![CDATA[
-    Preview your drawables in resources folder instead of the default icon. Supports binary and vector images.\nForked from Mista Mek's drawable preview library
+        <h3>See your drawables, not file icons.</h3>
+
+        <p>Replaces the default file icon for every drawable in your
+        Project View with a real, rendered preview &mdash; so finding the
+        right asset is a glance away instead of a guess. Works with both
+        Android (<code>res/drawable*</code>, <code>res/mipmap*</code>) and
+        Compose Multiplatform (<code>composeResources/drawable*</code>)
+        projects, and supports XML drawables, vector, SVG, PNG, JPG, WebP,
+        GIF, and 9-patch.</p>
+
+        <h4>What you get</h4>
+        <ul>
+            <li><b>Inline thumbnails</b> in the Project View, with a hover
+                tooltip showing dimensions, density bucket, and file size.</li>
+            <li><b>Right-click &rArr; Show Drawable Preview</b> opens a 256px
+                popup with switchable backgrounds (light, dark, checkered,
+                transparent), adaptive-icon mask shapes (circle, squircle,
+                rounded square, square), selector state tabs, density-variant
+                comparison, dominant-color palette, and Copy as PNG.</li>
+            <li><b>Editor gutter icons</b> next to
+                <code>R.drawable.foo</code> and <code>Res.drawable.foo</code>
+                references &mdash; click to jump to the file.</li>
+            <li><b>Find Drawable Usages</b> right-click action and an
+                <b>Unused drawable resource</b> inspection to keep your
+                <code>res/</code> folder clean.</li>
+            <li><b>Status-bar toggle</b> to flip previews on or off without
+                leaving your editor.</li>
+        </ul>
+
+        <h4>Built for performance</h4>
+        <p>Renders are cached and dispatched off the EDT through IntelliJ's
+        deferred-icon machinery, so even resource folders with thousands of
+        drawables stay smooth.</p>
+
+        <p><i>Originally forked from
+        <a href="https://github.com/mistamek/drawable-preview">mistamek/drawable-preview</a>;
+        rewritten for Android Studio Meerkat (2024.3) and newer.</i></p>
     ]]></description>
 
     <change-notes><![CDATA[
-    1.0 Initial release, binary and vector drawables support.<br/>
-    1.1 Added support for xml drawables.<br/>
-    1.1.1 Fixed bugs, decrease minimal IntelliJ version.<br/>
-    1.1.2 Fixed icon replacement with another plugins. Fixed icon rendering for MacOS.<br/>
-    1.1.3 Increased icons size for MacOS, fixed vector render.<br/>
-    1.1.4 Fixed mipmap parsing, fixed npe.<br/>
-    1.1.5 Added support for Android Studio 4.1<br/>
-    1.1.6 Added support for SVG icons<br/>
-    1.1.7 Support for Hedgehog<br/>
-    1.1.8 Support for Jellyfish (233)<br/>
-    1.1.9 Support for Koala (241)<br/>
-    1.1.10 Added plugin icon<br/>
+        <h3>1.2.0</h3>
+        <ul>
+            <li>Compose Multiplatform support — recognises
+                <code>composeResources/drawable*/</code> folders and
+                <code>Res.drawable.foo</code> references.</li>
+            <li>Right-click "Show Drawable Preview" popup with switchable
+                backgrounds, adaptive-icon mask shapes, selector state tabs,
+                density-variant comparison, color palette, and copy-to-clipboard.</li>
+            <li>Editor gutter icons for <code>R.drawable.foo</code> and
+                <code>Res.drawable.foo</code> references.</li>
+            <li>Project-View tooltip with embedded 96px thumbnail and metadata.</li>
+            <li>"Find Drawable Usages" right-click action.</li>
+            <li>"Unused drawable resource" inspection.</li>
+            <li>Status-bar widget for the master enable/disable toggle.</li>
+            <li>Static-frame preview of <code>&lt;animated-vector&gt;</code> drawables.</li>
+            <li>Adaptive icons render with a launcher-style mask (circle by default).</li>
+            <li>9-patch (<code>.9.png</code>) markers stripped from previews.</li>
+            <li>Cached, deferred rendering — no more EDT stalls in the Project View.</li>
+            <li>Migrated to IntelliJ Platform Gradle Plugin 2.x; targets Android Studio
+                Meerkat (2024.3) and newer; Java 21.</li>
+            <li>Numerous fixes: layer-list crash on zero padding, cross-type
+                resource resolution, classloader collisions with bundled Xerces,
+                non-Android module rendering, XXE hardening, case-insensitive
+                extension matching.</li>
+        </ul>
+        <h3>Earlier</h3>
+        <ul>
+            <li>1.1.10 Added plugin icon</li>
+            <li>1.1.9 Support for Koala (241)</li>
+            <li>1.1.8 Support for Jellyfish (233)</li>
+            <li>1.1.7 Support for Hedgehog</li>
+            <li>1.1.6 Added support for SVG icons</li>
+            <li>1.1.5 Added support for Android Studio 4.1</li>
+            <li>1.1.4 Fixed mipmap parsing, fixed NPE</li>
+            <li>1.1.3 Increased icons size for macOS, fixed vector render</li>
+            <li>1.1.2 Fixed icon replacement with other plugins; macOS icon rendering</li>
+            <li>1.1.1 Bug fixes; decreased minimum IntelliJ version</li>
+            <li>1.1 Added XML drawables</li>
+            <li>1.0 Initial release with binary and vector drawables</li>
+        </ul>
     ]]>
     </change-notes>
 
