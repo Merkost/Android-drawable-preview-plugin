@@ -11,6 +11,7 @@ import com.android.tools.idea.configurations.ConfigurationManager
 import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.roots.ProjectRootManager
 import com.intellij.psi.PsiFile
+import org.jetbrains.android.facet.AndroidFacet
 import com.merkost.drawablepreview.drawables.DrawableInflater
 import com.merkost.drawablepreview.drawables.Utils
 import com.merkost.drawablepreview.drawables.dom.Drawable
@@ -56,42 +57,17 @@ object XmlImageFactory {
     }
 
     fun parseXmlFile(file: File): Document? = try {
-        withJaxpClassLoader {
-            DocumentBuilderFactory.newInstance().apply {
-                // Harden against XXE attacks.
-                setFeature("http://apache.org/xml/features/disallow-doctype-decl", true)
-                setFeature("http://xml.org/sax/features/external-general-entities", false)
-                setFeature("http://xml.org/sax/features/external-parameter-entities", false)
-                isXIncludeAware = false
-                isExpandEntityReferences = false
-            }.newDocumentBuilder().parse(file)
-        }
+        DocumentBuilderFactory.newInstance().apply {
+            // Harden against XXE attacks.
+            setFeature("http://apache.org/xml/features/disallow-doctype-decl", true)
+            setFeature("http://xml.org/sax/features/external-general-entities", false)
+            setFeature("http://xml.org/sax/features/external-parameter-entities", false)
+            isXIncludeAware = false
+            isExpandEntityReferences = false
+        }.newDocumentBuilder().parse(file)
     } catch (e: Exception) {
         LOG.warn("Failed to parse XML drawable: ${file.path}", e)
         null
-    }
-
-    /**
-     * Run [block] with the thread context classloader pinned to JAXP's defining
-     * classloader. Without this, DocumentBuilderFactory.newInstance() finds
-     * the IntelliJ-bundled Xerces and fails the subsequent cast with:
-     *
-     *     ClassCastException: DocumentBuilderFactoryImpl is in unnamed module
-     *     of loader PathClassLoader; ... is in unnamed module of loader
-     *     PluginClassLoader
-     *
-     * because the platform and plugin classloaders see different
-     * DocumentBuilderFactory classes.
-     */
-    private inline fun <T> withJaxpClassLoader(block: () -> T): T {
-        val thread = Thread.currentThread()
-        val previous = thread.contextClassLoader
-        thread.contextClassLoader = DocumentBuilderFactory::class.java.classLoader
-        return try {
-            block()
-        } finally {
-            thread.contextClassLoader = previous
-        }
     }
 
     private fun getDrawableImage(rootElement: Element): BufferedImage? {
@@ -168,13 +144,26 @@ object XmlImageFactory {
 
     private fun getResourceResolver(element: PsiFile?): ResourceResolver? {
         if (element == null) return null
+        val virtualFile = element.virtualFile ?: return null
 
         val module = ProjectRootManager.getInstance(element.project)
-            .fileIndex.getModuleForFile(element.virtualFile)
+            .fileIndex.getModuleForFile(virtualFile)
             ?: return null
 
-        return ConfigurationManager.getOrCreateInstance(module)
-            .getConfiguration(element.virtualFile)
-            .resourceResolver
+        // ConfigurationManager / ResourceResolver only work for modules with
+        // an Android facet. Compose Multiplatform commonMain (and any plain
+        // Kotlin/JVM module) has none — getConfiguration throws AssertionError
+        // there. Without a resolver we just skip @-reference resolution; the
+        // raw drawable still renders correctly for self-contained vectors.
+        if (AndroidFacet.getInstance(module) == null) return null
+
+        return try {
+            ConfigurationManager.getOrCreateInstance(module)
+                .getConfiguration(virtualFile)
+                .resourceResolver
+        } catch (e: Throwable) {
+            LOG.debug("Could not obtain ResourceResolver for ${virtualFile.path}", e)
+            null
+        }
     }
 }

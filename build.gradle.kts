@@ -48,7 +48,18 @@ val androidPluginPath: Provider<File> = provider {
 }
 
 dependencies {
-    implementation("org.apache.xmlgraphics:batik-transcoder:1.18")
+    // Batik 1.18 transitively pulls xml-apis 1.4.01 (2009-vintage) which
+    // ships its own javax/xml/parsers/DocumentBuilder*.class. That stale
+    // duplicate ends up on the plugin classloader and clashes with the
+    // JDK's java.base copy: DocumentBuilderFactory.newInstance() returns
+    // an Xerces impl from the platform classloader (extending the JDK's
+    // class) which then fails to cast back to our plugin classloader's
+    // copy with ClassCastException. The JDK has had javax.xml.parsers
+    // built-in since Java 5, so we never need xml-apis.
+    implementation("org.apache.xmlgraphics:batik-transcoder:1.18") {
+        exclude(group = "xml-apis", module = "xml-apis")
+        exclude(group = "xml-apis", module = "xml-apis-ext")
+    }
     testImplementation("junit:junit:4.13.2")
 
     intellijPlatform {
