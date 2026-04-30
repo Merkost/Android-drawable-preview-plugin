@@ -76,6 +76,11 @@ object SettingsUtils {
     fun isModified(previewSize: Int, enabled: Boolean): Boolean =
         previewSize.clampToValidRange() != getPreviewSize() || enabled != isEnabled()
 
+    /** Quick toggle for the master enable flag — used by the status bar widget. */
+    fun setEnabled(enabled: Boolean) {
+        apply(getPreviewSize(), enabled)
+    }
+
     fun apply(previewSize: Int, enabled: Boolean) {
         val clamped = previewSize.clampToValidRange()
         val props = PropertiesComponent.getInstance()

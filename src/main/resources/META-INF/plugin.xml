@@ -42,6 +42,10 @@
 
         <codeInsight.lineMarkerProvider language=""
             implementationClass="com.merkost.drawablepreview.DrawableLineMarkerProvider" />
+
+        <statusBarWidgetFactory id="com.merkost.drawablepreview.StatusBarWidget"
+            implementation="com.merkost.drawablepreview.statusbar.DrawablePreviewStatusBarWidgetFactory"
+            order="last" />
     </extensions>
 
     <actions>
