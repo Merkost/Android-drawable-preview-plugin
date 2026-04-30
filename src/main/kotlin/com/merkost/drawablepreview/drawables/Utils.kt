@@ -1,6 +1,7 @@
 package com.merkost.drawablepreview.drawables
 
 import android.view.Gravity
+import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.vfs.LocalFileSystem
 import com.intellij.psi.PsiFile
 import com.merkost.drawablepreview.factories.IconPreviewFactory
@@ -11,6 +12,8 @@ import java.util.Scanner
 import kotlin.math.round
 
 object Utils {
+
+    private val LOG = Logger.getInstance(Utils::class.java)
 
     private const val LEFT = "left"
     private const val TOP = "top"
@@ -29,9 +32,10 @@ object Utils {
 
     fun parseAttributeAsInt(string: String?, defaultValue: Int): Int {
         return string?.let { intString ->
-            return try {
+            try {
                 Scanner(intString).useDelimiter("\\D+").nextInt()
             } catch (e: Exception) {
+                if (LOG.isDebugEnabled) LOG.debug("parseAttributeAsInt failed for '$intString'", e)
                 defaultValue
             }
         } ?: defaultValue
@@ -39,9 +43,10 @@ object Utils {
 
     fun parseAttributeAsFloat(string: String?, defaultValue: Float): Float {
         return string?.let { floatString ->
-            return try {
+            try {
                 Scanner(floatString).useDelimiter("[^0-9.]+").nextFloat()
             } catch (e: Exception) {
+                if (LOG.isDebugEnabled) LOG.debug("parseAttributeAsFloat failed for '$floatString'", e)
                 defaultValue
             }
         } ?: defaultValue
@@ -49,9 +54,10 @@ object Utils {
 
     fun parseAttributeAsPercent(string: String?, defaultValue: Float): Float {
         return string?.let { percentString ->
-            return try {
+            try {
                 Scanner(percentString).useDelimiter("\\D+").nextInt() / 100F
             } catch (e: Exception) {
+                if (LOG.isDebugEnabled) LOG.debug("parseAttributeAsPercent failed for '$percentString'", e)
                 defaultValue
             }
         } ?: defaultValue
@@ -59,11 +65,12 @@ object Utils {
 
     fun parseAttributeAsColor(string: String?, defaultColor: Color?): Color? {
         return string?.let { colorString ->
-            return try {
+            try {
                 var color = colorString.substring(1).toLong(16)
                 if (colorString.length == 7) color = color or -16777216L
-                return Color(color.toInt(), true)
+                Color(color.toInt(), true)
             } catch (e: Exception) {
+                if (LOG.isDebugEnabled) LOG.debug("parseAttributeAsColor failed for '$colorString'", e)
                 defaultColor
             }
         } ?: defaultColor
@@ -91,8 +98,9 @@ object Utils {
                         END -> value = value or Gravity.END
                     }
                 }
-                return if (value == Gravity.NO_GRAVITY) defaultValue else value
+                if (value == Gravity.NO_GRAVITY) defaultValue else value
             } catch (e: Exception) {
+                if (LOG.isDebugEnabled) LOG.debug("parseAttributeAsGravity failed for '$gravityString'", e)
                 defaultValue
             }
         } ?: defaultValue

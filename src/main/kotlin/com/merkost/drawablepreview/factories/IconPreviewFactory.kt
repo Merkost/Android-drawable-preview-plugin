@@ -1,5 +1,6 @@
 package com.merkost.drawablepreview.factories
 
+import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiElement
 import com.intellij.psi.PsiFile
@@ -11,6 +12,8 @@ import javax.swing.Icon
 import javax.swing.ImageIcon
 
 object IconPreviewFactory {
+    private val LOG = Logger.getInstance(IconPreviewFactory::class.java)
+
     var psiManager: PsiManager? = null
         private set
 
@@ -24,7 +27,7 @@ object IconPreviewFactory {
             psiManager = null
             result
         } catch (e: Exception) {
-            e.printStackTrace(System.out)
+            LOG.warn("Failed to create preview icon for ${(element as? PsiFile)?.virtualFile?.path}", e)
             null
         } finally {
             psiManager = null

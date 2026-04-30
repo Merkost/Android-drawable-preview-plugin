@@ -1,5 +1,6 @@
 package com.merkost.drawablepreview.factories
 
+import com.intellij.openapi.diagnostic.Logger
 import com.merkost.drawablepreview.settings.SettingsUtils
 import org.apache.batik.transcoder.TranscoderInput
 import org.apache.batik.transcoder.TranscoderOutput
@@ -8,34 +9,30 @@ import java.awt.image.BufferedImage
 import java.io.ByteArrayInputStream
 import java.io.ByteArrayOutputStream
 import java.io.File
-import java.io.FileInputStream
 import javax.imageio.ImageIO
 
 object SvgImageFactory {
 
-    fun createSvgImage(
-        path: String
-    ): BufferedImage? {
-        val transcoder = PNGTranscoder()
-        transcoder.addTranscodingHint(PNGTranscoder.KEY_WIDTH, SettingsUtils.getPreviewSize().toFloat())
-        transcoder.addTranscodingHint(PNGTranscoder.KEY_HEIGHT, SettingsUtils.getPreviewSize().toFloat())
+    private val LOG = Logger.getInstance(SvgImageFactory::class.java)
 
-        try {
-            val inputStream = FileInputStream(File(path))
-            val input = TranscoderInput(inputStream)
+    fun createSvgImage(path: String): BufferedImage? {
+        val size = SettingsUtils.getPreviewSize().toFloat()
+        val transcoder = PNGTranscoder().apply {
+            addTranscodingHint(PNGTranscoder.KEY_WIDTH, size)
+            addTranscodingHint(PNGTranscoder.KEY_HEIGHT, size)
+        }
 
-            val outputStream = ByteArrayOutputStream()
-            val output = TranscoderOutput(outputStream)
-
-            transcoder.transcode(input, output)
-
-            outputStream.flush()
-            outputStream.close()
-
-            val imgData = outputStream.toByteArray()
-            return ImageIO.read(ByteArrayInputStream(imgData))
-        } catch (exception: Exception) {
-            return null
+        return try {
+            val bytes = File(path).inputStream().use { input ->
+                ByteArrayOutputStream().use { output ->
+                    transcoder.transcode(TranscoderInput(input), TranscoderOutput(output))
+                    output.toByteArray()
+                }
+            }
+            ImageIO.read(ByteArrayInputStream(bytes))
+        } catch (e: Exception) {
+            LOG.warn("Failed to render SVG: $path", e)
+            null
         }
     }
 }

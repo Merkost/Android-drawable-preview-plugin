@@ -8,6 +8,7 @@ import com.android.ide.common.vectordrawable.VdPreview
 import com.android.resources.ResourceType
 import com.android.resources.ResourceUrl
 import com.android.tools.idea.configurations.ConfigurationManager
+import com.intellij.openapi.diagnostic.Logger
 import com.intellij.openapi.roots.ProjectRootManager
 import com.intellij.psi.PsiFile
 import com.merkost.drawablepreview.drawables.DrawableInflater
@@ -23,6 +24,8 @@ import java.io.File
 import javax.xml.parsers.DocumentBuilderFactory
 
 object XmlImageFactory {
+
+    private val LOG = Logger.getInstance(XmlImageFactory::class.java)
 
     fun createXmlImage(path: String): BufferedImage? {
         val document = parseDocument(path) ?: return null
@@ -60,14 +63,20 @@ object XmlImageFactory {
     }
 
     fun parseXmlFile(file: File): Document? {
-        try {
-            val dbFactory = DocumentBuilderFactory.newInstance()
-            val dBuilder = dbFactory.newDocumentBuilder()
-            return dBuilder.parse(file)
+        return try {
+            val dbFactory = DocumentBuilderFactory.newInstance().apply {
+                // Harden against XXE attacks.
+                setFeature("http://apache.org/xml/features/disallow-doctype-decl", true)
+                setFeature("http://xml.org/sax/features/external-general-entities", false)
+                setFeature("http://xml.org/sax/features/external-parameter-entities", false)
+                isXIncludeAware = false
+                isExpandEntityReferences = false
+            }
+            dbFactory.newDocumentBuilder().parse(file)
         } catch (e: Exception) {
-            e.printStackTrace()
+            LOG.warn("Failed to parse XML drawable: ${file.path}", e)
+            null
         }
-        return null
     }
 
     private fun getDrawableImage(rootElement: Element): BufferedImage? {
