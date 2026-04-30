@@ -74,8 +74,8 @@ object IconPreviewFactory {
     private fun getImage(virtualFile: VirtualFile): BufferedImage? {
         val path = virtualFile.path
         return when {
-            path.endsWith(Constants.XML_TYPE) -> XmlImageFactory.createXmlImage(path)
-            path.endsWith(Constants.SVG_TYPE) -> SvgImageFactory.createSvgImage(path)
+            path.endsWith(Constants.XML_TYPE, ignoreCase = true) -> XmlImageFactory.createXmlImage(path)
+            path.endsWith(Constants.SVG_TYPE, ignoreCase = true) -> SvgImageFactory.createSvgImage(path)
             else -> BitmapImageFactory.createBitmapImage(path)
         }
     }
