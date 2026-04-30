@@ -5,7 +5,7 @@ import java.util.Properties
 
 plugins {
     kotlin("jvm") version "2.1.21"
-    id("org.jetbrains.intellij.platform") version "2.2.1"
+    id("org.jetbrains.intellij.platform") version "2.15.0"
 }
 
 group = "com.merkost.drawablepreview"
