@@ -13,10 +13,15 @@ import java.awt.FlowLayout
 import java.awt.Graphics
 import java.awt.Graphics2D
 import java.awt.RenderingHints
+import java.awt.Toolkit
+import java.awt.datatransfer.DataFlavor
+import java.awt.datatransfer.Transferable
+import java.awt.datatransfer.UnsupportedFlavorException
 import java.awt.image.BufferedImage
 import javax.swing.BorderFactory
 import javax.swing.Box
 import javax.swing.ButtonGroup
+import javax.swing.JButton
 import javax.swing.JLabel
 import javax.swing.JPanel
 import javax.swing.JToggleButton
@@ -68,7 +73,33 @@ class DrawablePreviewPanel(
             column.add(Box.createVerticalStrut(4))
             column.add(buildMaskChooser())
         }
+        column.add(Box.createVerticalStrut(4))
+        column.add(buildActionsRow())
         return column
+    }
+
+    private fun buildActionsRow(): JPanel {
+        val row = JPanel(FlowLayout(FlowLayout.CENTER, 4, 4))
+        row.add(JButton("Copy as PNG").apply {
+            isFocusable = false
+            addActionListener { copyToClipboard() }
+        })
+        return row
+    }
+
+    private fun copyToClipboard() {
+        val image = canvas.currentImage() ?: return
+        val transferable = ImageTransferable(image)
+        Toolkit.getDefaultToolkit().systemClipboard.setContents(transferable, null)
+    }
+
+    private class ImageTransferable(private val image: BufferedImage) : Transferable {
+        override fun getTransferDataFlavors(): Array<DataFlavor> = arrayOf(DataFlavor.imageFlavor)
+        override fun isDataFlavorSupported(flavor: DataFlavor): Boolean = flavor == DataFlavor.imageFlavor
+        override fun getTransferData(flavor: DataFlavor): Any {
+            if (flavor != DataFlavor.imageFlavor) throw UnsupportedFlavorException(flavor)
+            return image
+        }
     }
 
     private fun buildSelectorStateChooser(states: List<SelectorState>): JPanel = chooserRow(
@@ -139,6 +170,8 @@ class DrawablePreviewPanel(
             this.image = image
             repaint()
         }
+
+        fun currentImage(): BufferedImage? = image
 
         override fun paintComponent(g: Graphics) {
             val g2 = g.create() as Graphics2D
