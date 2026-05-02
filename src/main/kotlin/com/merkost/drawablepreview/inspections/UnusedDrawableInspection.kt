@@ -4,7 +4,7 @@ import com.intellij.codeInspection.InspectionManager
 import com.intellij.codeInspection.LocalInspectionTool
 import com.intellij.codeInspection.ProblemDescriptor
 import com.intellij.codeInspection.ProblemHighlightType
-import com.intellij.openapi.application.ReadAction
+import com.intellij.openapi.application.runReadAction
 import com.intellij.openapi.vfs.VirtualFile
 import com.intellij.psi.PsiFile
 import com.intellij.psi.search.GlobalSearchScope
@@ -41,7 +41,7 @@ class UnusedDrawableInspection : LocalInspectionTool() {
         val helper = PsiSearchHelper.getInstance(project)
         val scope = GlobalSearchScope.projectScope(project)
 
-        val foundReference = ReadAction.compute<Boolean, RuntimeException> {
+        val foundReference = runReadAction {
             var found = false
             // We search for the bare name and then verify it's used in a
             // drawable context. processElementsWithWord short-circuits on the
