@@ -15,7 +15,7 @@ plugins {
 }
 
 group = "com.merkost.drawablepreview"
-version = "1.2.0"
+version = "1.3.0-SNAPSHOT"
 
 // AS 243+ ships on JBR 21 and requires Java 21 bytecode.
 java {
@@ -87,12 +87,13 @@ dependencies {
         bundledPlugin("org.jetbrains.kotlin")
 
         // Use the IDE's bundled Compose runtime + Jewel UI library so we
-        // don't ship a duplicate ~12 MB of Skia + Compose binaries. AS
-        // Narwhal (253) ships these as platform modules; if we ever target
-        // an older IDE that doesn't bundle them, we'd need to add the
-        // standalone artifacts as fallback.
+        // don't ship a duplicate ~12 MB of Skia + Compose binaries.
+        //
+        // Narwhal (251) is the floor; Meerkat (243) bundles Compose but no
+        // Jewel. The compose.runtime.desktop module isn't a separate
+        // bundle on 251 — its classes live inside compose.foundation.desktop,
+        // so we don't need a third bundledModule reference for it.
         bundledModule("intellij.platform.compose")
-        bundledModule("intellij.libraries.compose.runtime.desktop")
         bundledModule("intellij.libraries.compose.foundation.desktop")
         bundledModule("intellij.platform.jewel.foundation")
         bundledModule("intellij.platform.jewel.ui")

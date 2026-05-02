@@ -10,8 +10,14 @@ jvm = "21"
 
 # IDE we compile and test against by default. Override per-developer with
 # `studio.dir=...` in local.properties.
-androidStudio = "2024.3.2.2"
-sinceBuild = "243"
+#
+# Narwhal Feature Drop (build 251) is the floor — that's where Jewel and the
+# IntelliJ-bundled Compose runtime first ship reliably. Meerkat (243) has
+# the platform compose jar but no Jewel modules, so the Resource Manager
+# tool window can't load there. Lifting sinceBuild to 251 drops Meerkat
+# users from auto-update; they keep 1.2.0.
+androidStudio = "2025.1.2.11"
+sinceBuild = "251"
 
 # Library versions
 batik = "1.18"
