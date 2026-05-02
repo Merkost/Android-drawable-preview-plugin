@@ -7,3 +7,8 @@ build
 .intellijPlatform
 .DS_Store
 /.claude/
+
+# Local secrets — never commit. .env.example is the documented template.
+/.env
+/.env.local
+/.env.*.local
