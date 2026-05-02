@@ -45,9 +45,11 @@ Works with both Android (`res/drawable*`, `res/mipmap*`) and Compose Multiplatfo
 
 | Audience | Minimum |
 | --- | --- |
-| Android Studio | Meerkat (2024.3) |
-| IntelliJ IDEA + Android plugin | 2024.3 (build 243) |
+| Android Studio | Panda (2025.3) |
+| IntelliJ IDEA + Android plugin | 2025.3 (build 253) |
 | JVM (matches IDE's bundled JBR) | 21 |
+
+> **Older IDEs (Meerkat 2024.3 / Narwhal 2025.1 / Otter 2025.2):** stay on the 1.2.0 release. The Marketplace will route the right version automatically.
 
 ---
 

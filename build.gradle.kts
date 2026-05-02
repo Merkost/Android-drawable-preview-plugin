@@ -15,7 +15,7 @@ plugins {
 }
 
 group = "com.merkost.drawablepreview"
-version = "1.3.0-SNAPSHOT"
+version = "1.3.0"
 
 // AS 243+ ships on JBR 21 and requires Java 21 bytecode.
 java {
