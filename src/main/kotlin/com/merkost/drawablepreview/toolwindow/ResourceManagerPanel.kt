@@ -1,11 +1,20 @@
-@file:OptIn(org.jetbrains.jewel.foundation.ExperimentalJewelApi::class)
+@file:OptIn(
+    org.jetbrains.jewel.foundation.ExperimentalJewelApi::class,
+    androidx.compose.ui.ExperimentalComposeUiApi::class,
+    androidx.compose.foundation.ExperimentalFoundationApi::class,
+)
 
 package com.merkost.drawablepreview.toolwindow
 
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.draganddrop.dragAndDropSource
 import androidx.compose.foundation.gestures.awaitEachGesture
+import androidx.compose.ui.draganddrop.DragAndDropTransferAction
+import androidx.compose.ui.draganddrop.DragAndDropTransferData
+import androidx.compose.ui.draganddrop.DragAndDropTransferable
 import androidx.compose.ui.input.pointer.PointerEventType
 import androidx.compose.ui.input.pointer.isSecondaryPressed
 import androidx.compose.ui.input.pointer.pointerInput
@@ -297,6 +306,14 @@ private fun DrawableCell(project: Project, entry: DrawableEntry) {
         modifier = Modifier
             .size(CELL_SIZE_DP.dp)
             .clickable { openFile(project, entry) }
+            .dragAndDropSource { _ ->
+                DragAndDropTransferData(
+                    transferable = DragAndDropTransferable(
+                        java.awt.datatransfer.StringSelection("R.drawable.${entry.baseName}")
+                    ),
+                    supportedActions = listOf(DragAndDropTransferAction.Copy),
+                )
+            }
             .pointerInput(entry.file.path) {
                 awaitEachGesture {
                     val event = awaitPointerEvent()
