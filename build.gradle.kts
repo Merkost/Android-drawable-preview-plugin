@@ -94,6 +94,7 @@ dependencies {
         // bundle on 251 — its classes live inside compose.foundation.desktop,
         // so we don't need a third bundledModule reference for it.
         bundledModule("intellij.platform.compose")
+        bundledModule("intellij.libraries.compose.runtime.desktop")
         bundledModule("intellij.libraries.compose.foundation.desktop")
         bundledModule("intellij.platform.jewel.foundation")
         bundledModule("intellij.platform.jewel.ui")

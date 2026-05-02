@@ -84,10 +84,10 @@ enum class SortBy(val displayName: String) {
 @Composable
 fun ResourceManagerPanel(project: Project) {
     var entries by remember { mutableStateOf<List<DrawableEntry>>(emptyList()) }
-    var query by remember { mutableStateOf(TextFieldValue("")) }
-    var enabledKinds by remember { mutableStateOf(DrawableEntry.Kind.values().toSet()) }
-    var groupBy by remember { mutableStateOf(GroupBy.NONE) }
-    var sortBy by remember { mutableStateOf(SortBy.NAME_ASC) }
+    var query by remember { mutableStateOf(TextFieldValue(ToolWindowPreferences.loadQuery())) }
+    var enabledKinds by remember { mutableStateOf(ToolWindowPreferences.loadKinds()) }
+    var groupBy by remember { mutableStateOf(ToolWindowPreferences.loadGroupBy()) }
+    var sortBy by remember { mutableStateOf(ToolWindowPreferences.loadSortBy()) }
     val scope = rememberCoroutineScope()
 
     suspend fun rescan() {
@@ -150,7 +150,10 @@ fun ResourceManagerPanel(project: Project) {
     Column(modifier = Modifier.fillMaxSize().padding(8.dp)) {
         TextField(
             value = query,
-            onValueChange = { query = it },
+            onValueChange = {
+                query = it
+                ToolWindowPreferences.saveQuery(it.text)
+            },
             modifier = Modifier.fillMaxWidth().padding(bottom = 6.dp),
             placeholder = { Text("Filter by name") },
         )
@@ -160,6 +163,7 @@ fun ResourceManagerPanel(project: Project) {
             selected = enabledKinds,
             onToggle = { kind ->
                 enabledKinds = if (kind in enabledKinds) enabledKinds - kind else enabledKinds + kind
+                ToolWindowPreferences.saveKinds(enabledKinds)
             },
         )
 
@@ -170,14 +174,20 @@ fun ResourceManagerPanel(project: Project) {
                 values = GroupBy.values().toList(),
                 selected = groupBy,
                 labelOf = GroupBy::displayName,
-                onSelected = { groupBy = it },
+                onSelected = {
+                    groupBy = it
+                    ToolWindowPreferences.saveGroupBy(it)
+                },
             )
             EnumChooser(
                 label = "Sort:",
                 values = SortBy.values().toList(),
                 selected = sortBy,
                 labelOf = SortBy::displayName,
-                onSelected = { sortBy = it },
+                onSelected = {
+                    sortBy = it
+                    ToolWindowPreferences.saveSortBy(it)
+                },
             )
         }
 

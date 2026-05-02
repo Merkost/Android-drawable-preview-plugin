@@ -16,8 +16,8 @@ jvm = "21"
 # the platform compose jar but no Jewel modules, so the Resource Manager
 # tool window can't load there. Lifting sinceBuild to 251 drops Meerkat
 # users from auto-update; they keep 1.2.0.
-androidStudio = "2025.1.2.11"
-sinceBuild = "251"
+androidStudio = "2025.3.3.6"
+sinceBuild = "253"
 
 # Library versions
 batik = "1.18"
