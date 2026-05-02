@@ -193,11 +193,7 @@ fun ResourceManagerPanel(project: Project) {
 
         Spacer(Modifier.height(6.dp))
         Text(
-            text = when {
-                entries.isEmpty() -> "Scanning…"
-                filtered.size == entries.size -> "${entries.size} drawables"
-                else -> "${filtered.size} of ${entries.size} drawables"
-            },
+            text = headerText(entries, filtered),
             modifier = Modifier.padding(bottom = 6.dp),
         )
 
@@ -381,6 +377,17 @@ private fun loadThumbnail(project: Project, entry: DrawableEntry): ImageBitmap? 
 
 private fun openFile(project: Project, entry: DrawableEntry) {
     OpenFileDescriptor(project, entry.file).navigate(true)
+}
+
+private fun headerText(entries: List<DrawableEntry>, filtered: List<DrawableEntry>): String {
+    if (entries.isEmpty()) return "Scanning…"
+    val totalBytes = filtered.sumOf { it.file.length }
+    val size = com.merkost.drawablepreview.Format.humanSize(totalBytes)
+    return if (filtered.size == entries.size) {
+        "${entries.size} drawables  ·  $size"
+    } else {
+        "${filtered.size} of ${entries.size} drawables  ·  $size"
+    }
 }
 
 private fun revealInProjectView(project: Project, entry: DrawableEntry) {

@@ -31,7 +31,7 @@ class DrawableNodeDecorator : ProjectViewNodeDecorator {
         val parts = mutableListOf<String>()
         dimensionsOf(file)?.let(parts::add)
         densityBucketOf(file)?.let(parts::add)
-        parts += humanSize(file.length)
+        parts += Format.humanSize(file.length)
 
         val name = htmlEscape(file.name)
         val meta = parts.joinToString("&nbsp;&nbsp;•&nbsp;&nbsp;")
@@ -87,13 +87,6 @@ class DrawableNodeDecorator : ProjectViewNodeDecorator {
         val qualifiers = parent.substringAfter('-', missingDelimiterValue = "")
         if (qualifiers.isEmpty()) return null
         return qualifiers
-    }
-
-    private fun humanSize(bytes: Long): String {
-        if (bytes < 1024) return "$bytes B"
-        val kb = bytes / 1024.0
-        if (kb < 1024) return "%.1f KB".format(kb)
-        return "%.1f MB".format(kb / 1024.0)
     }
 
     private fun htmlEscape(s: String): String =
